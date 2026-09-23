@@ -107,8 +107,15 @@ export const POIS: Poi[] = [
 ]
 export const poi = (id: string) => POIS.find((p) => p.id === id)!
 
+/** Country level of the hierarchy: country > city > landmark. */
+export const COUNTRY = {
+  id: 'france', code: 'FR',
+  name: { en: 'France', es: 'Francia', de: 'Frankreich', pt: 'França', pl: 'Francja', fr: 'France' } as L,
+  slug: { en: 'france', es: 'francia', de: 'frankreich', pt: 'franca', pl: 'francja', fr: 'france' } as L,
+}
+
 export const CITY = {
-  id: 'paris', lat: 48.8566, lng: 2.3522, country: 'FR',
+  id: 'paris', lat: 48.8566, lng: 2.3522, country: 'france',
   name: { en: 'Paris', es: 'París', de: 'Paris', pt: 'Paris', pl: 'Paryż', fr: 'Paris' } as L,
   slug: { en: 'paris', es: 'paris', de: 'paris', pt: 'paris', pl: 'paryz', fr: 'paris' } as L,
 }

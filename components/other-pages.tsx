@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { type Locale, fmtDistance, fmtDate, fmtNum, fmtScore } from '@/lib/i18n'
 import { ui } from '@/lib/ui'
 import { editorial } from '@/data/editorial'
-import { POIS, CITY, viewHotels, bestView, shownViews, hotelViewPois, poi, nearHotels, DATA_DATE, type Hotel } from '@/lib/data'
+import { POIS, CITY, COUNTRY, viewHotels, bestView, shownViews, hotelViewPois, poi, nearHotels, DATA_DATE, type Hotel } from '@/lib/data'
 import { href, route, type Route } from '@/lib/routes'
 import { hotelLink } from '@/lib/site'
 import { abs } from '@/lib/seo'
@@ -114,7 +114,7 @@ export function CityPage({ l }: { l: Locale }) {
   const t = ui(l)
   const counts = Object.fromEntries(POIS.filter((p) => p.view).map((p) => [p.id, viewHotels(p.id).length]))
   const c = editorial(l).city(counts)
-  const cr: Crumb[] = [{ name: t.home, href: href('home', l) }, { name: CITY.name[l], href: href('city', l) }]
+  const cr: Crumb[] = [{ name: t.home, href: href('home', l) }, { name: COUNTRY.name[l], href: href('country', l) }, { name: CITY.name[l], href: href('city', l) }]
   const views = POIS.filter((p) => p.view && viewHotels(p.id).length).sort((a, b) => viewHotels(b.id).length - viewHotels(a.id).length)
   const featured = views.map((p) => viewHotels(p.id).find((h) => bestView(h, p.id)?.confidence === 'HIGH') ?? viewHotels(p.id)[0]).map((h, i) => ({ h, p: views[i] }))
     .filter((x, i, a) => x.h && a.findIndex((y) => y.h.id === x.h.id) === i).slice(0, 6)
@@ -129,7 +129,7 @@ export function CityPage({ l }: { l: Locale }) {
           <img src={CITY_PHOTO} alt={CITY.name[l]} className="absolute inset-0 h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(10,14,30,.75)] via-[rgba(10,14,30,.15)] to-transparent" />
           <div className="relative">
-            <div className="text-sm font-semibold opacity-85"><Link href={href('home', l)}>{t.home}</Link> / {CITY.name[l]}</div>
+            <div className="text-sm font-semibold opacity-85"><Link href={href('home', l)}>{t.home}</Link> / <Link href={href('country', l)}>{COUNTRY.name[l]}</Link> / {CITY.name[l]}</div>
             <h1 className="mt-2 text-[clamp(38px,6vw,72px)] font-extrabold leading-none tracking-[-0.04em]">
               {c.h1.replace(/ (in|en) (Paris|París)$/, '')}<br /><span className="text-peach">{l === 'de' ? 'in Paris' : l === 'es' ? 'en París' : 'in Paris'}</span>
             </h1>
@@ -208,7 +208,7 @@ export function HotelPage({ l, h }: { l: Locale; h: Hotel }) {
   const vp = hotelViewPois(h)
   const main = vp[0]
   const cr: Crumb[] = [
-    { name: t.home, href: href('home', l) }, { name: CITY.name[l], href: href('city', l) },
+    { name: t.home, href: href('home', l) }, { name: COUNTRY.name[l], href: href('country', l) }, { name: CITY.name[l], href: href('city', l) },
     { name: bare(poi(main).name[l]), href: href(`view:${main}`, l) }, { name: h.name, href: route(`hotel:${h.id}`)!.paths[l] },
   ]
   const nearby = Object.entries(h.distances).sort((a, b) => a[1] - b[1]).slice(0, 7)
@@ -285,6 +285,43 @@ export function HotelPage({ l, h }: { l: Locale; h: Hotel }) {
         <MapView center={{ lat: poi(main).lat, lng: poi(main).lng }} label={poi(main).name[l]} pins={[{ n: 1, lat: h.lat, lng: h.lng, name: h.name, view: true }]} legend={{ view: t.mapLegendView, near: t.mapLegendNear }} />
       </Wrap>
       <div className="pb-20" />
+    </main>
+  )
+}
+
+export function CountryPage({ l }: { l: Locale }) {
+  const t = ui(l)
+  const cr: Crumb[] = [{ name: t.home, href: href('home', l) }, { name: COUNTRY.name[l], href: href('country', l) }]
+  const views = POIS.filter((p) => p.view && viewHotels(p.id).length)
+  const total = new Set(views.flatMap((p) => viewHotels(p.id).map((h) => h.id))).size
+  return (
+    <main>
+      <JsonLd data={crumbLd(cr)} />
+      <Wrap className="pt-8">
+        <Breadcrumbs items={cr} />
+        <h1 className="balance mb-3 mt-2.5 text-[34px] font-extrabold leading-[1.05] tracking-[-0.04em] sm:text-[52px]">{t.countryH1(COUNTRY.name[l])}</h1>
+        <p className="max-w-[760px] text-[17px] leading-[1.6] text-muted">{t.countryLede(COUNTRY.name[l])}</p>
+      </Wrap>
+      <Wrap className="pt-10">
+        <H2 className="mb-5">{t.citiesIn(COUNTRY.name[l])}</H2>
+        <Link href={href('city', l)} className="grid overflow-hidden rounded-[20px] bg-paper p-2 sm:grid-cols-[1.2fr_1fr]">
+          <div className="relative h-[240px] overflow-hidden rounded-[14px] bg-[#DDE3EE]">
+            <img src={CITY_PHOTO} alt={CITY.name[l]} className="absolute inset-0 h-full w-full object-cover" />
+            <span className="absolute left-3 top-3 rounded-full bg-ok px-2.5 py-1 text-xs font-bold text-white">{t.live}</span>
+          </div>
+          <div className="flex flex-col justify-center gap-2 p-6">
+            <div className="text-[28px] font-extrabold tracking-[-0.03em]">{CITY.name[l]}</div>
+            <div className="text-sm font-semibold text-sky">{t.hotelsWithView(total)}</div>
+            <div className="text-sm text-muted">{views.map((p) => bare(p.name[l]).replace(/^./, (x) => x.toUpperCase())).join(' · ')}</div>
+          </div>
+        </Link>
+      </Wrap>
+      <Wrap className="pb-20 pt-12">
+        <H2 className="mb-5">{t.landmarksIn}</H2>
+        <div className="grid gap-3.5 [grid-template-columns:repeat(auto-fit,minmax(200px,1fr))]">
+          {views.map((p) => <LandmarkTile key={p.id} l={l} id={p.id} />)}
+        </div>
+      </Wrap>
     </main>
   )
 }

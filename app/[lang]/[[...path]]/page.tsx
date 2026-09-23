@@ -4,12 +4,13 @@ import { hasLocale, fmtDistance, fmtDate, type Locale } from '@/lib/i18n'
 import { ROUTES, resolve, type Route } from '@/lib/routes'
 import { pageMeta } from '@/lib/seo'
 import { editorial } from '@/data/editorial'
-import { POIS, viewHotels, hotelViewPois } from '@/lib/data'
+import { POIS, viewHotels, hotelViewPois, COUNTRY } from '@/lib/data'
+import { ui } from '@/lib/ui'
 import { viewStats, nearStats } from '@/lib/stats'
 import { LANDMARK_PHOTO, CITY_PHOTO } from '@/lib/photos'
 import { Header, Footer } from '@/components/chrome'
 import { ViewPage, NearPage } from '@/components/landmark-pages'
-import { HomePage, CityPage, MethodPage, HotelPage } from '@/components/other-pages'
+import { HomePage, CountryPage, CityPage, MethodPage, HotelPage } from '@/components/other-pages'
 import { eur } from '@/components/hotel-card'
 
 export const dynamicParams = false
@@ -36,6 +37,7 @@ export async function generateMetadata(props: PageProps<'/[lang]/[[...path]]'>):
   const pg = r.page
   switch (pg.type) {
     case 'home': { const c = e.home(); return { ...pageMeta(r, l, c.title, c.meta), title: { absolute: c.title } } }
+    case 'country': { const t = ui(l); return pageMeta(r, l, t.countryH1(COUNTRY.name[l]), t.countryLede(COUNTRY.name[l]), CITY_PHOTO) }
     case 'city': { const c = e.city(Object.fromEntries(POIS.filter((p) => p.view).map((p) => [p.id, viewHotels(p.id).length]))); return pageMeta(r, l, c.title, c.meta, CITY_PHOTO) }
     case 'method': { const c = e.method(); return pageMeta(r, l, c.title, c.meta) }
     case 'view': { const c = e.view(pg.poi.id, viewStats(pg.poi.id), f(l)); return pageMeta(r, l, c.title, c.meta, LANDMARK_PHOTO[pg.poi.id] ?? viewHotels(pg.poi.id)[0]?.image) }
@@ -54,6 +56,7 @@ export default async function Page(props: PageProps<'/[lang]/[[...path]]'>) {
     <>
       <Header l={l} route={r} />
       {pg.type === 'home' && <HomePage l={l} />}
+      {pg.type === 'country' && <CountryPage l={l} />}
       {pg.type === 'city' && <CityPage l={l} />}
       {pg.type === 'method' && <MethodPage l={l} />}
       {pg.type === 'view' && <ViewPage l={l} r={r} p={pg.poi} />}

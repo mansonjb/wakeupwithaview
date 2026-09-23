@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { type Locale, fmtDistance, fmtDate } from '@/lib/i18n'
 import { ui } from '@/lib/ui'
 import { editorial } from '@/data/editorial'
-import { viewHotels, nearHotels, nearbyPois, poi, CITY, shownViews, type Poi } from '@/lib/data'
+import { viewHotels, nearHotels, nearbyPois, poi, CITY, COUNTRY, shownViews, type Poi } from '@/lib/data'
 import { viewStats, nearStats } from '@/lib/stats'
 import { href, route, HOTEL_PAGES, type Route } from '@/lib/routes'
 import { areaLink } from '@/lib/site'
@@ -18,6 +18,7 @@ function crumbs(l: Locale, p: Poi, extra?: Crumb): Crumb[] {
   const t = ui(l)
   return [
     { name: t.home, href: href('home', l) },
+    { name: COUNTRY.name[l], href: href('country', l) },
     { name: CITY.name[l], href: href('city', l) },
     { name: p.name[l].replace(/^(the|el|la|die|der|das|los) /i, ''), href: href(`view:${p.id}`, l) },
     ...(extra ? [extra] : []),
