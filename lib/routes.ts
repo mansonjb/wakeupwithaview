@@ -1,11 +1,15 @@
 // Route registry: every public URL, per locale, with its page type. The catch-all page resolves a
 // path through this table, hreflang is read from it, and the sitemap is built from it.
 import { ACTIVE, type Locale, type L } from '@/lib/i18n'
+import { CATEGORIES, categoryIndexable, type Category } from '@/lib/categories'
+import { GUIDES, type Guide } from '@/data/guides'
 import { COUNTRY, CITY, POIS, HOTELS, hotelViewPois, viewIndexable, nearIndexable, type Poi, type Hotel } from '@/lib/data'
 
 const SEG = {
   nearby: { en: 'nearby', es: 'cerca', de: 'in-der-naehe', pt: 'perto', pl: 'w-poblizu', fr: 'a-proximite' } as L,
   hotels: { en: 'hotels', es: 'hoteles', de: 'hotels', pt: 'hoteis', pl: 'hotele', fr: 'hotels' } as L,
+  guides: { en: 'guides', es: 'guias', de: 'ratgeber', pt: 'guias', pl: 'poradniki', fr: 'guides' } as L,
+  car: { en: 'car-rental', es: 'alquiler-de-coches', de: 'mietwagen', pt: 'aluguer-de-carros', pl: 'wynajem-samochodow', fr: 'location-de-voiture' } as L,
   method: { en: 'how-we-verify-views', es: 'como-verificamos-las-vistas', de: 'wie-wir-aussichten-pruefen', pt: 'como-verificamos-as-vistas', pl: 'jak-weryfikujemy-widoki', fr: 'comment-nous-verifions-les-vues' } as L,
 }
 
@@ -17,6 +21,10 @@ export type Page =
   | { type: 'near'; poi: Poi }
   | { type: 'hotel'; hotel: Hotel }
   | { type: 'method' }
+  | { type: 'category'; cat: Category }
+  | { type: 'guides' }
+  | { type: 'guide'; guide: Guide }
+  | { type: 'car' }
 
 export type Route = { key: string; page: Page; paths: Record<Locale, string>; index: boolean }
 
@@ -41,6 +49,12 @@ export const ROUTES: Route[] = [
   ...POIS.filter((x) => x.near).map((x): Route => ({
     key: `near:${x.id}`, page: { type: 'near', poi: x }, paths: all((l) => c(l, x.slug[l], SEG.nearby[l])), index: nearIndexable(x.id),
   })),
+  ...CATEGORIES.map((x): Route => ({
+    key: `cat:${x.id}`, page: { type: 'category', cat: x }, paths: all((l) => c(l, x.slug[l])), index: categoryIndexable(x.id),
+  })),
+  { key: 'guides', page: { type: 'guides' }, paths: all((l) => p(l, SEG.guides[l])), index: true },
+  ...GUIDES.map((g): Route => ({ key: `guide:${g.id}`, page: { type: 'guide', guide: g }, paths: all((l) => p(l, SEG.guides[l], g.slug[l])), index: true })),
+  { key: 'car', page: { type: 'car' }, paths: all((l) => c(l, SEG.car[l])), index: true },
   ...HOTEL_PAGES.map((h): Route => ({
     key: `hotel:${h.id}`, page: { type: 'hotel', hotel: h }, paths: all((l) => c(l, SEG.hotels[l], h.slug)), index: true,
   })),

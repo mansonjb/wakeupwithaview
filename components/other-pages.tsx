@@ -14,6 +14,10 @@ import MapView from '@/components/map-view'
 import RotatingCity from '@/components/rotating-city'
 import { homeDeep } from '@/data/editorial/home-deep'
 import { globalStats } from '@/lib/stats'
+import { CATEGORIES, categoryHotels } from '@/lib/categories'
+import { GUIDES } from '@/data/guides'
+import { SECTION_UI } from '@/lib/sections'
+import { GuideTeaser } from '@/components/section-pages'
 
 const bare = (s: string) => s.replace(/^(the|el|la|die|der|das|los|les) /i, '')
 const photoFor = (id: string) => LANDMARK_PHOTO[id] ?? viewHotels(id)[0]?.image ?? CITY_PHOTO
@@ -45,15 +49,17 @@ export function HomePage({ l }: { l: Locale }) {
   const c = editorial(l).home()
   const g = globalStats()
   const d = homeDeep(l, g, fmtDate(DATA_DATE, l))
+  const su = SECTION_UI[l]
   const liveViews = POIS.filter((p) => p.view && viewHotels(p.id).length).sort((a, b) => viewHotels(b.id).length - viewHotels(a.id).length)
   const featured = liveViews.flatMap((p) => viewHotels(p.id).filter((h) => bestView(h, p.id)?.confidence === 'HIGH').map((h) => ({ h, p })))
     .filter((x, i, a) => a.findIndex((y) => y.h.id === x.h.id) === i).slice(0, 6)
-  const levelCls: Record<string, string> = { strong: 'bg-ok-soft text-ok', medium: 'bg-sky-soft text-sky', weak: 'bg-[#FFF3E0] text-sun-dark', none: 'bg-canvas text-faint' }
   return (
     <main>
       <JsonLd data={faqLd(d.faq)} />
       <JsonLd data={{ '@context': 'https://schema.org', '@type': 'WebSite', name: 'Wake Up With A View', url: abs(href('home', l)), inLanguage: l }} />
       <JsonLd data={{ '@context': 'https://schema.org', '@type': 'Organization', name: 'Wake Up With A View', url: abs('/') }} />
+
+      {/* 1. Hero + search */}
       <section className="bg-sky px-4 pb-[150px] pt-[72px] text-white sm:px-6">
         <div className="mx-auto max-w-[1200px]">
           <div className="mb-3.5 text-sm font-semibold opacity-85">{t.tagline}</div>
@@ -71,86 +77,37 @@ export function HomePage({ l }: { l: Locale }) {
             <Link href={href('view:eiffel-tower', l)} className="rounded-full bg-sun px-8 py-4 text-center font-bold text-white hover:bg-sun-dark">{t.findView}</Link>
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
-            {POIS.filter((p) => p.view && viewHotels(p.id).length).map((p) => (
+            {liveViews.map((p) => (
               <Link key={p.id} href={href(`view:${p.id}`, l)} className="rounded-full border border-rule px-3.5 py-1.5 text-[13px] font-semibold text-sky hover:border-sky">{bare(p.name[l]).replace(/^./, (x) => x.toUpperCase())}</Link>
             ))}
-            {SOON.map((s) => <span key={s.landmark} className="rounded-full border border-rule px-3.5 py-1.5 text-[13px] font-semibold text-faint">{s.landmark} · {t.soon}</span>)}
           </div>
         </div>
       </div>
 
-      <Wrap className="pt-10">
-        <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(200px,1fr))]">
-          {d.stats.map((x) => (
-            <div key={x.label} className="rounded-[20px] bg-paper p-5">
-              <div className="text-[36px] font-extrabold leading-none tracking-[-0.04em] text-sky">{x.n}</div>
-              <div className="mt-2 text-sm leading-snug text-muted">{x.label}</div>
-            </div>
+      {/* 2. Categories */}
+      <Wrap className="pt-14">
+        <H2>{d.catTitle}</H2>
+        <p className="mb-5 mt-2 text-muted">{d.catLede}</p>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {CATEGORIES.map((x) => (
+            <Link key={x.id} href={href(`cat:${x.id}`, l)} className="group flex flex-col gap-2 rounded-[20px] bg-paper p-5 hover:shadow-[0_12px_30px_rgba(20,30,60,.12)]">
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-soft text-xl text-sky">{x.icon}</span>
+              <span className="text-[17px] font-extrabold tracking-[-0.02em] group-hover:text-sky">{x.short[l]}</span>
+              <span className="text-[13px] font-semibold text-muted">{t.hotelsWithView(categoryHotels(x.id).length)}</span>
+            </Link>
           ))}
-        </div>
-        <p className="mt-3 text-xs text-faint">{d.statsNote} <Link href={href('method', l)} className="font-semibold text-sky">{t.methodLink} →</Link></p>
-      </Wrap>
-
-      <Wrap className="pb-6 pt-14">
-        <div className="mb-5 flex items-end justify-between gap-3">
-          <H2>{t.wakeUpTo}</H2>
-          <div className="text-sm text-muted">{t.moreSoon}</div>
-        </div>
-        <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
-          <Link href={href('city', l)} className="block rounded-[20px] bg-paper p-2">
-            <div className="relative h-[260px] overflow-hidden rounded-[14px] bg-[#DDE3EE]">
-              <img src={HOME_PHOTO} alt={CITY.name[l]} className="absolute inset-0 h-full w-full object-cover" />
-              <span className="absolute left-3 top-3 rounded-full bg-ok px-2.5 py-1 text-xs font-bold text-white">{t.live}</span>
-            </div>
-            <div className="px-2.5 pb-2.5 pt-3.5"><div className="text-lg font-bold">{bare(poi('eiffel-tower').name[l])}</div><div className="text-sm text-muted">{CITY.name[l]}</div></div>
+          <Link href={href('city', l)} className="flex flex-col justify-center gap-1 rounded-[20px] bg-sky p-5 text-white hover:bg-sky-dark">
+            <span className="text-[17px] font-extrabold">{t.seeAll} →</span>
+            <span className="text-[13px] opacity-85">{CITY.name[l]}</span>
           </Link>
-          {SOON.map((s) => (
-            <div key={s.landmark} className="rounded-[20px] bg-paper p-2 opacity-90">
-              <div className="relative h-[260px] overflow-hidden rounded-[14px] bg-[#DDE3EE]">
-                <img src={s.photo} alt={s.landmark} loading="lazy" className="absolute inset-0 h-full w-full object-cover grayscale-[35%]" />
-                <span className="absolute left-3 top-3 rounded-full bg-faint px-2.5 py-1 text-xs font-bold text-white">{t.soon}</span>
-              </div>
-              <div className="px-2.5 pb-2.5 pt-3.5"><div className="text-lg font-bold">{s.landmark}</div><div className="text-sm text-muted">{s.city}</div></div>
-            </div>
-          ))}
         </div>
       </Wrap>
 
-      <Wrap className="pt-12">
-        <H2 className="mb-5">{t.whatToWakeUp} <span className="text-muted">· {CITY.name[l]}</span></H2>
-        <div className="grid gap-3.5 [grid-template-columns:repeat(auto-fit,minmax(200px,1fr))]">
-          {liveViews.map((p) => <LandmarkTile key={p.id} l={l} id={p.id} />)}
-        </div>
-      </Wrap>
-
+      {/* 3. How it works */}
       <Wrap className="pt-14">
-        <div className="grid items-center gap-6 rounded-[28px] bg-ink p-7 text-white sm:p-10 lg:grid-cols-[auto_1fr]">
-          <div className="text-[clamp(64px,10vw,120px)] font-extrabold leading-none tracking-[-0.05em] text-peach">{d.proxBig}</div>
-          <div>
-            <h2 className="balance text-[26px] font-extrabold tracking-[-0.03em] sm:text-[30px]">{d.proxTitle}</h2>
-            <p className="mt-3 text-[16px] leading-[1.65] text-[#C9CED8]">{d.proxText}</p>
-          </div>
-        </div>
-      </Wrap>
-
-      <Wrap className="pt-14">
-        <H2>{d.termsTitle}</H2>
-        <p className="mb-5 mt-2 text-muted">{d.termsLede}</p>
-        <div className="overflow-hidden rounded-[20px] bg-paper">
-          {d.terms.map((x) => (
-            <div key={x.term} className="grid gap-2 border-b border-rule px-5 py-4 last:border-0 sm:grid-cols-[minmax(0,1.1fr)_minmax(0,2fr)_auto] sm:items-center sm:gap-5">
-              <div className="font-mono text-[13px] font-semibold text-ink">{x.term}</div>
-              <div className="text-[15px] leading-[1.5] text-muted">{x.means}</div>
-              <span className={`w-fit rounded-full px-3 py-1 text-xs font-bold ${levelCls[x.level]}`}>{d.levels[x.level]}</span>
-            </div>
-          ))}
-        </div>
-      </Wrap>
-
-      <Wrap className="pt-14">
-        <H2 className="mb-5">{d.stepsTitle}</H2>
-        <ol className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">
-          {d.steps.map((x, i) => (
+        <H2 className="mb-5">{d.howTitle}</H2>
+        <ol className="grid gap-4 md:grid-cols-3">
+          {d.how.map((x, i) => (
             <li key={x.t} className="rounded-[20px] bg-paper p-6">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sun text-sm font-extrabold text-white">{i + 1}</div>
               <div className="mb-1.5 mt-3.5 text-[18px] font-extrabold tracking-[-0.02em]">{x.t}</div>
@@ -160,6 +117,7 @@ export function HomePage({ l }: { l: Locale }) {
         </ol>
       </Wrap>
 
+      {/* 4. Top hotels */}
       <Wrap className="pt-14">
         <H2>{d.featuredTitle}</H2>
         <p className="mb-5 mt-2 text-muted">{d.featuredLede}</p>
@@ -183,19 +141,87 @@ export function HomePage({ l }: { l: Locale }) {
         </div>
       </Wrap>
 
-      <Wrap className="pt-14"><Cards cards={c.cards} /></Wrap>
-      <Wrap className="pt-12">
+      {/* 5. Destinations */}
+      <Wrap className="pt-14">
+        <div className="mb-5 flex items-end justify-between gap-3">
+          <H2>{t.wakeUpTo}</H2>
+          <div className="text-sm text-muted">{t.moreSoon}</div>
+        </div>
+        <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
+          <Link href={href('city', l)} className="block rounded-[20px] bg-paper p-2">
+            <div className="relative h-[260px] overflow-hidden rounded-[14px] bg-[#DDE3EE]">
+              <img src={HOME_PHOTO} alt={CITY.name[l]} className="absolute inset-0 h-full w-full object-cover" />
+              <span className="absolute left-3 top-3 rounded-full bg-ok px-2.5 py-1 text-xs font-bold text-white">{t.live}</span>
+            </div>
+            <div className="px-2.5 pb-2.5 pt-3.5"><div className="text-lg font-bold">{CITY.name[l]}</div><div className="text-sm text-muted">{COUNTRY.name[l]} · {t.hotelsWithView(g.withView)}</div></div>
+          </Link>
+          {SOON.map((x, i) => (
+            <div key={x.landmark} className="rounded-[20px] bg-paper p-2 opacity-90">
+              <div className="relative h-[260px] overflow-hidden rounded-[14px] bg-[#DDE3EE]">
+                <img src={x.photo} alt={t.soonPlaces[i]?.city ?? x.city} loading="lazy" className="absolute inset-0 h-full w-full object-cover grayscale-[35%]" />
+                <span className="absolute left-3 top-3 rounded-full bg-faint px-2.5 py-1 text-xs font-bold text-white">{t.soon}</span>
+              </div>
+              <div className="px-2.5 pb-2.5 pt-3.5"><div className="text-lg font-bold">{t.soonPlaces[i]?.city ?? x.city}</div><div className="text-sm text-muted">{t.soonPlaces[i]?.country}</div></div>
+            </div>
+          ))}
+        </div>
+      </Wrap>
+
+      {/* 6. Landmarks in the live city */}
+      <Wrap className="pt-14">
+        <H2 className="mb-5">{t.whatToWakeUp} <span className="text-muted">· {CITY.name[l]}</span></H2>
+        <div className="grid gap-3.5 [grid-template-columns:repeat(auto-fit,minmax(200px,1fr))]">
+          {liveViews.map((p) => <LandmarkTile key={p.id} l={l} id={p.id} />)}
+        </div>
+      </Wrap>
+
+      {/* 7. Proximity is not a view */}
+      <Wrap className="pt-14">
+        <div className="grid items-center gap-6 rounded-[28px] bg-ink p-7 text-white sm:p-10 lg:grid-cols-[auto_1fr]">
+          <div className="text-[clamp(64px,10vw,120px)] font-extrabold leading-none tracking-[-0.05em] text-peach">{d.proxBig}</div>
+          <div>
+            <h2 className="balance text-[26px] font-extrabold tracking-[-0.03em] sm:text-[30px]">{d.proxTitle}</h2>
+            <p className="mt-3 text-[16px] leading-[1.65] text-[#C9CED8]">{d.proxText}</p>
+            <p className="mt-3 text-xs text-[#8A909B]">{d.statsNote}</p>
+          </div>
+        </div>
+      </Wrap>
+
+      {/* 8. Guides */}
+      <Wrap className="pt-14">
+        <div className="mb-5 flex items-end justify-between gap-3">
+          <H2>{d.guidesTitle}</H2>
+          <Link href={href('guides', l)} className="text-sm font-semibold text-sun">{su.allGuides} →</Link>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">{GUIDES.slice(0, 2).map((x) => <GuideTeaser key={x.id} g={x} l={l} />)}</div>
+      </Wrap>
+
+      {/* 9. Car rental band */}
+      <Wrap className="pt-14">
+        <div className="flex flex-col items-start justify-between gap-4 rounded-[24px] bg-sky-soft p-6 sm:flex-row sm:items-center sm:p-8">
+          <div>
+            <div className="text-[22px] font-extrabold tracking-[-0.02em]">🚗 {d.carTitle}</div>
+            <p className="mt-1.5 max-w-[620px] text-[15px] text-muted">{d.carText}</p>
+          </div>
+          <Link href={href('car', l)} className="shrink-0 rounded-full bg-sky px-6 py-3 font-bold text-white hover:bg-sky-dark">{d.carCta} →</Link>
+        </div>
+      </Wrap>
+
+      {/* 10. Principles */}
+      <Wrap className="pt-14">
         <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">
-          {c.sections.map((s, i) => (
-            <div key={s.h} className="rounded-[20px] bg-paper p-7">
+          {c.sections.map((x, i) => (
+            <div key={x.h} className="rounded-[20px] bg-paper p-7">
               <div className="text-[13px] font-bold text-sky">0{i + 1}</div>
-              <div className="mb-2 mt-2.5 text-xl font-extrabold tracking-[-0.02em]">{s.h}</div>
-              <p className="text-[15px] leading-[1.55] text-muted">{s.p[0]}</p>
+              <div className="mb-2 mt-2.5 text-xl font-extrabold tracking-[-0.02em]">{x.h}</div>
+              <p className="text-[15px] leading-[1.55] text-muted">{x.p[0]}</p>
             </div>
           ))}
         </div>
         <p className="mt-6 text-sm text-muted">{c.lede} <Link href={href('method', l)} className="font-semibold text-sky">{t.methodLink} →</Link></p>
       </Wrap>
+
+      {/* 11. FAQ */}
       <Wrap className="pb-20 pt-14">
         <H2 className="mb-4">{d.faqTitle}</H2>
         <Faq items={d.faq} />
@@ -267,6 +293,10 @@ export function CityPage({ l }: { l: Locale }) {
       <Wrap className="pt-12"><Cards cards={c.cards} /></Wrap>
       <Wrap className="pt-10"><Guide sections={c.sections} /></Wrap>
       <Wrap className="pt-12">
+        <h2 className="mb-4 text-[22px] font-extrabold">{SECTION_UI[l].categories}</h2>
+        <Chips items={[...CATEGORIES.map((x) => ({ label: `${x.icon} ${x.short[l]} · ${categoryHotels(x.id).length}`, href: href(`cat:${x.id}`, l) })), { label: `🚗 ${SECTION_UI[l].car}`, href: href('car', l) }]} />
+      </Wrap>
+      <Wrap className="pt-10">
         <h2 className="mb-4 text-[22px] font-extrabold">{t.stayNear}</h2>
         <Chips items={nearPois.map((p) => ({ label: `${t.hotelsNear(bare(p.name[l]))} · ${nearHotels(p.id).length}`, href: route(`near:${p.id}`)!.paths[l] }))} />
       </Wrap>

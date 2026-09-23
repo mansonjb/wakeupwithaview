@@ -12,6 +12,10 @@ import { Header, Footer } from '@/components/chrome'
 import { ViewPage, NearPage } from '@/components/landmark-pages'
 import { HomePage, CountryPage, CityPage, MethodPage, HotelPage } from '@/components/other-pages'
 import { eur } from '@/components/hotel-card'
+import { CategoryPage, GuidesIndex, GuidePage, CarRentalPage, SECTION_UI, carCopy } from '@/components/section-pages'
+import { categoryHotels, BUDGET_MAX } from '@/lib/categories'
+import { categoryCopy } from '@/data/editorial/categories'
+import { CITY } from '@/lib/data'
 
 export const dynamicParams = false
 
@@ -42,6 +46,15 @@ export async function generateMetadata(props: PageProps<'/[lang]/[[...path]]'>):
     case 'method': { const c = e.method(); return pageMeta(r, l, c.title, c.meta) }
     case 'view': { const c = e.view(pg.poi.id, viewStats(pg.poi.id), f(l)); return pageMeta(r, l, c.title, c.meta, LANDMARK_PHOTO[pg.poi.id] ?? viewHotels(pg.poi.id)[0]?.image) }
     case 'near': { const c = e.near(pg.poi.id, nearStats(pg.poi.id), f(l)); return pageMeta(r, l, c.title, c.meta, LANDMARK_PHOTO[pg.poi.id]) }
+    case 'category': {
+      const hs = categoryHotels(pg.cat.id)
+      const date = fmtDate(hs.find((h) => h.offer)?.offer?.checkIn ?? '2026-11-12', l)
+      const title = `${pg.cat.name[l]} ${l === 'es' ? 'en' : 'in'} ${CITY.name[l]} (${hs.length})`
+      return pageMeta(r, l, title, categoryCopy(l, pg.cat.id).lede({ n: hs.length, city: CITY.name[l], max: eur(BUDGET_MAX, l), date }))
+    }
+    case 'guides': return pageMeta(r, l, SECTION_UI[l].guides, SECTION_UI[l].guidesLede)
+    case 'guide': return pageMeta(r, l, pg.guide.copy[l].title, pg.guide.copy[l].meta)
+    case 'car': return pageMeta(r, l, carCopy(l).title, carCopy(l).meta)
     case 'hotel': {
       const c = e.hotel(pg.hotel.name, hotelViewPois(pg.hotel), f(l))
       return pageMeta(r, l, c.title, c.meta, pg.hotel.image)
@@ -62,6 +75,10 @@ export default async function Page(props: PageProps<'/[lang]/[[...path]]'>) {
       {pg.type === 'view' && <ViewPage l={l} r={r} p={pg.poi} />}
       {pg.type === 'near' && <NearPage l={l} r={r} p={pg.poi} />}
       {pg.type === 'hotel' && <HotelPage l={l} h={pg.hotel} />}
+      {pg.type === 'category' && <CategoryPage l={l} r={r} cat={pg.cat} />}
+      {pg.type === 'guides' && <GuidesIndex l={l} />}
+      {pg.type === 'guide' && <GuidePage l={l} r={r} g={pg.guide} />}
+      {pg.type === 'car' && <CarRentalPage l={l} r={r} />}
       <Footer l={l} />
     </>
   )

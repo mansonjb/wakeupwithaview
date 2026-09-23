@@ -22,6 +22,14 @@ export type HomeDeep = {
   featuredLede: string
   faqTitle: string
   faq: QA[]
+  catTitle: string
+  catLede: string
+  howTitle: string
+  how: { t: string; d: string }[]
+  guidesTitle: string
+  carTitle: string
+  carText: string
+  carCta: string
 }
 
 const en = (g: G, date: string): HomeDeep => ({
@@ -58,6 +66,18 @@ const en = (g: G, date: string): HomeDeep => ({
   ],
   featuredTitle: 'Views named in the room itself',
   featuredLede: 'Hotels where the landmark appears in a room category, the strongest evidence we list.',
+  catTitle: 'Find the view that fits your trip',
+  catLede: 'Every category is a rule we check in the data, not a label we pick.',
+  howTitle: 'How Wake Up With A View works',
+  how: [
+    { t: 'Choose what you want to see', d: 'A landmark, a river, the rooftops. Each has its own list of hotels.' },
+    { t: 'See where the view comes from', d: 'Named in the room, stated by the hotel, from a rooftop: we quote the hotel’s own words.' },
+    { t: 'Book the right room', d: 'Check live prices with our partners, and book the category that names the view.' },
+  ],
+  guidesTitle: 'Guides',
+  carTitle: 'Leaving Paris by car?',
+  carText: 'You won’t need a car in the city. For Versailles, Giverny or Champagne, compare rental offers and pick up on your way out.',
+  carCta: 'Compare car rental',
   faqTitle: 'Questions about rooms with a view',
   faq: [
     { q: 'What does “room with a view” mean on a hotel booking?', a: 'It depends on the wording. A room category that names the landmark is a commitment from the hotel. “City view” or “some rooms offer views” are much looser. We show the exact wording for every hotel.' },
@@ -103,6 +123,18 @@ const es = (g: G, date: string): HomeDeep => ({
   ],
   featuredTitle: 'Vistas indicadas en la propia habitación',
   featuredLede: 'Hoteles en los que el monumento aparece en un tipo de habitación, la prueba más sólida que mostramos.',
+  catTitle: 'Encuentra las vistas que encajan con tu viaje',
+  catLede: 'Cada categoría es un criterio que comprobamos en los datos, no una etiqueta elegida a dedo.',
+  howTitle: 'Cómo funciona Wake Up With A View',
+  how: [
+    { t: 'Elige lo que quieres ver', d: 'Un monumento, un río, los tejados. Cada uno tiene su propia lista de hoteles.' },
+    { t: 'Mira desde dónde se ve', d: 'En el nombre de la habitación, indicado por el hotel, desde la azotea: citamos las palabras del propio hotel.' },
+    { t: 'Reserva la habitación correcta', d: 'Consulta los precios actuales con nuestros socios y reserva la categoría que nombra las vistas.' },
+  ],
+  guidesTitle: 'Guías',
+  carTitle: '¿Sales de París en coche?',
+  carText: 'En la ciudad no lo necesitarás. Para Versalles, Giverny o Champaña, compara ofertas de alquiler y recógelo al salir.',
+  carCta: 'Comparar alquiler de coches',
   faqTitle: 'Preguntas sobre habitaciones con vistas',
   faq: [
     { q: '¿Qué significa «habitación con vistas» en una reserva de hotel?', a: 'Depende de cómo esté escrito. Un tipo de habitación que nombra el monumento es un compromiso del hotel. «Vistas a la ciudad» o «algunas habitaciones tienen vistas» son mucho más vagos. Mostramos el texto exacto de cada hotel.' },
@@ -148,6 +180,18 @@ const de = (g: G, date: string): HomeDeep => ({
   ],
   featuredTitle: 'Aussicht im Zimmernamen selbst',
   featuredLede: 'Hotels, bei denen das Wahrzeichen in einer Zimmerkategorie steht, der stärkste Beleg, den wir führen.',
+  catTitle: 'Finde die Aussicht, die zu deiner Reise passt',
+  catLede: 'Jede Kategorie ist eine Regel, die wir in den Daten prüfen, kein beliebiges Etikett.',
+  howTitle: 'So funktioniert Wake Up With A View',
+  how: [
+    { t: 'Wähle, was du sehen willst', d: 'Ein Wahrzeichen, einen Fluss, die Dächer. Jedes hat seine eigene Hotelliste.' },
+    { t: 'Sieh, woher der Blick kommt', d: 'Im Zimmernamen, vom Hotel angegeben, von der Dachterrasse: Wir zitieren den Wortlaut des Hotels.' },
+    { t: 'Buche das richtige Zimmer', d: 'Prüfe aktuelle Preise bei unseren Partnern und buche die Kategorie, die den Blick nennt.' },
+  ],
+  guidesTitle: 'Ratgeber',
+  carTitle: 'Mit dem Auto aus Paris hinaus?',
+  carText: 'In der Stadt brauchst du keins. Für Versailles, Giverny oder die Champagne vergleichst du Mietwagen und holst ihn bei der Abreise ab.',
+  carCta: 'Mietwagen vergleichen',
   faqTitle: 'Fragen zu Zimmern mit Aussicht',
   faq: [
     { q: 'Was bedeutet „Zimmer mit Aussicht“ bei einer Hotelbuchung?', a: 'Das hängt vom Wortlaut ab. Eine Zimmerkategorie, die das Wahrzeichen nennt, ist eine Zusage des Hotels. „Stadtblick“ oder „einige Zimmer bieten Aussicht“ sind viel vager. Wir zeigen für jedes Hotel den genauen Wortlaut.' },
