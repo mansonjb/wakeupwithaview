@@ -11,6 +11,7 @@ import { Breadcrumbs, JsonLd, type Crumb } from '@/components/chrome'
 import { Cards, Guide, Faq, faqLd, Chips, H2, Wrap } from '@/components/blocks'
 import { Stars, eur } from '@/components/hotel-card'
 import MapView from '@/components/map-view'
+import RotatingCity from '@/components/rotating-city'
 
 const bare = (s: string) => s.replace(/^(the|el|la|die|der|das|los|les) /i, '')
 const photoFor = (id: string) => LANDMARK_PHOTO[id] ?? viewHotels(id)[0]?.image ?? CITY_PHOTO
@@ -47,9 +48,10 @@ export function HomePage({ l }: { l: Locale }) {
       <section className="bg-sky px-4 pb-[150px] pt-[72px] text-white sm:px-6">
         <div className="mx-auto max-w-[1200px]">
           <div className="mb-3.5 text-sm font-semibold opacity-85">{t.tagline}</div>
-          <h1 className="balance max-w-[900px] text-[clamp(40px,7vw,84px)] font-extrabold leading-none tracking-[-0.04em]">
-            {t.heroA} <span className="text-peach">{t.heroB}</span>
+          <h1 className="max-w-[980px] text-[clamp(40px,7vw,84px)] font-extrabold leading-[1.02] tracking-[-0.04em]">
+            {t.heroIn}<br /><RotatingCity cities={t.heroCities} />
           </h1>
+          <p className="mt-5 text-[clamp(18px,2.2vw,24px)] font-bold opacity-90">{t.heroA} <span className="text-peach">{t.heroB}</span></p>
         </div>
       </section>
       <div className="mx-auto -mt-[100px] max-w-[1200px] px-4 sm:px-6">
