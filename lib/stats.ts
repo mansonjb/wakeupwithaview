@@ -1,5 +1,5 @@
 // Numbers the editorial quotes. Computed from the normalized data at build time, never typed by hand.
-import { viewHotels, nearHotels, shownViews, type Hotel } from '@/lib/data'
+import { viewHotels, nearHotels, shownViews, HOTELS, POIS, type Hotel } from '@/lib/data'
 
 const median = (xs: number[]) => {
   if (!xs.length) return null
@@ -58,5 +58,39 @@ export function nearStats(poiId: string) {
     medianRating: median(rated.map((h) => h.rating!)),
     medianPrice: median(hs.filter((h) => h.offer).map((h) => h.offer!.from)),
     priceDate: hs.find((h) => h.offer)?.offer?.checkIn ?? null,
+  }
+}
+
+/** Site-wide numbers for the home page. All computed from the normalized data. */
+export function globalStats() {
+  const viewPois = POIS.filter((p) => p.view)
+  const withView = HOTELS.filter((h) => h.views.some((v) => v.confidence !== 'LOW'))
+  const roomLevel = withView.filter((h) => h.views.some((v) => v.confidence === 'HIGH'))
+  const lowOnly = HOTELS.filter((h) => h.views.length && h.views.every((v) => v.confidence === 'LOW')).length
+  const rejected = HOTELS.reduce((n, h) => n + h.views.filter((v) => v.confidence === 'LOW').length, 0)
+  // Proximity is not a view: of the hotels within 1 km of a landmark, how many state that view?
+  const prox = POIS.filter((p) => p.view && p.near).map((p) => {
+    const near = HOTELS.filter((h) => h.distances[p.id] != null && h.distances[p.id] <= 1000)
+    const seen = near.filter((h) => h.views.some((v) => v.poi === p.id && v.confidence !== 'LOW'))
+    return { id: p.id, near: near.length, seen: seen.length }
+  })
+  const nearAll = prox.reduce((n, x) => n + x.near, 0), seenAll = prox.reduce((n, x) => n + x.seen, 0)
+  const allPrem: number[] = []
+  for (const h of withView) for (const [poiId, price] of Object.entries(h.viewOffers)) {
+    if (h.offer?.from && viewPois.some((p) => p.id === poiId)) allPrem.push(((price - h.offer.from) / h.offer.from) * 100)
+  }
+  const med = median(allPrem)
+  const eiffel = prox.find((x) => x.id === 'eiffel-tower')
+  return {
+    scanned: HOTELS.length,
+    withView: withView.length,
+    roomLevel: roomLevel.length,
+    landmarks: viewPois.filter((p) => HOTELS.some((h) => h.views.some((v) => v.poi === p.id && v.confidence !== 'LOW'))).length,
+    rejectedMentions: rejected,
+    lowOnly,
+    proximity: { near: nearAll, seen: seenAll, pct: nearAll ? Math.round((seenAll / nearAll) * 100) : 0 },
+    eiffelProximity: eiffel,
+    premiumMedian: med == null ? null : Math.round(med),
+    premiumN: allPrem.length,
   }
 }

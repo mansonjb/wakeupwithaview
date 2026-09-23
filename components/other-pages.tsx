@@ -12,6 +12,8 @@ import { Cards, Guide, Faq, faqLd, Chips, H2, Wrap } from '@/components/blocks'
 import { Stars, eur } from '@/components/hotel-card'
 import MapView from '@/components/map-view'
 import RotatingCity from '@/components/rotating-city'
+import { homeDeep } from '@/data/editorial/home-deep'
+import { globalStats } from '@/lib/stats'
 
 const bare = (s: string) => s.replace(/^(the|el|la|die|der|das|los|les) /i, '')
 const photoFor = (id: string) => LANDMARK_PHOTO[id] ?? viewHotels(id)[0]?.image ?? CITY_PHOTO
@@ -41,8 +43,15 @@ function LandmarkTile({ l, id, big = false }: { l: Locale; id: string; big?: boo
 export function HomePage({ l }: { l: Locale }) {
   const t = ui(l)
   const c = editorial(l).home()
+  const g = globalStats()
+  const d = homeDeep(l, g, fmtDate(DATA_DATE, l))
+  const liveViews = POIS.filter((p) => p.view && viewHotels(p.id).length).sort((a, b) => viewHotels(b.id).length - viewHotels(a.id).length)
+  const featured = liveViews.flatMap((p) => viewHotels(p.id).filter((h) => bestView(h, p.id)?.confidence === 'HIGH').map((h) => ({ h, p })))
+    .filter((x, i, a) => a.findIndex((y) => y.h.id === x.h.id) === i).slice(0, 6)
+  const levelCls: Record<string, string> = { strong: 'bg-ok-soft text-ok', medium: 'bg-sky-soft text-sky', weak: 'bg-[#FFF3E0] text-sun-dark', none: 'bg-canvas text-faint' }
   return (
     <main>
+      <JsonLd data={faqLd(d.faq)} />
       <JsonLd data={{ '@context': 'https://schema.org', '@type': 'WebSite', name: 'Wake Up With A View', url: abs(href('home', l)), inLanguage: l }} />
       <JsonLd data={{ '@context': 'https://schema.org', '@type': 'Organization', name: 'Wake Up With A View', url: abs('/') }} />
       <section className="bg-sky px-4 pb-[150px] pt-[72px] text-white sm:px-6">
@@ -70,7 +79,19 @@ export function HomePage({ l }: { l: Locale }) {
         </div>
       </div>
 
-      <Wrap className="pb-6 pt-16">
+      <Wrap className="pt-10">
+        <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(200px,1fr))]">
+          {d.stats.map((x) => (
+            <div key={x.label} className="rounded-[20px] bg-paper p-5">
+              <div className="text-[36px] font-extrabold leading-none tracking-[-0.04em] text-sky">{x.n}</div>
+              <div className="mt-2 text-sm leading-snug text-muted">{x.label}</div>
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-xs text-faint">{d.statsNote} <Link href={href('method', l)} className="font-semibold text-sky">{t.methodLink} →</Link></p>
+      </Wrap>
+
+      <Wrap className="pb-6 pt-14">
         <div className="mb-5 flex items-end justify-between gap-3">
           <H2>{t.wakeUpTo}</H2>
           <div className="text-sm text-muted">{t.moreSoon}</div>
@@ -95,8 +116,75 @@ export function HomePage({ l }: { l: Locale }) {
         </div>
       </Wrap>
 
-      <Wrap className="pt-10"><Cards cards={c.cards} /></Wrap>
-      <Wrap className="pb-20 pt-12">
+      <Wrap className="pt-12">
+        <H2 className="mb-5">{t.whatToWakeUp} <span className="text-muted">· {CITY.name[l]}</span></H2>
+        <div className="grid gap-3.5 [grid-template-columns:repeat(auto-fit,minmax(200px,1fr))]">
+          {liveViews.map((p) => <LandmarkTile key={p.id} l={l} id={p.id} />)}
+        </div>
+      </Wrap>
+
+      <Wrap className="pt-14">
+        <div className="grid items-center gap-6 rounded-[28px] bg-ink p-7 text-white sm:p-10 lg:grid-cols-[auto_1fr]">
+          <div className="text-[clamp(64px,10vw,120px)] font-extrabold leading-none tracking-[-0.05em] text-peach">{d.proxBig}</div>
+          <div>
+            <h2 className="balance text-[26px] font-extrabold tracking-[-0.03em] sm:text-[30px]">{d.proxTitle}</h2>
+            <p className="mt-3 text-[16px] leading-[1.65] text-[#C9CED8]">{d.proxText}</p>
+          </div>
+        </div>
+      </Wrap>
+
+      <Wrap className="pt-14">
+        <H2>{d.termsTitle}</H2>
+        <p className="mb-5 mt-2 text-muted">{d.termsLede}</p>
+        <div className="overflow-hidden rounded-[20px] bg-paper">
+          {d.terms.map((x) => (
+            <div key={x.term} className="grid gap-2 border-b border-rule px-5 py-4 last:border-0 sm:grid-cols-[minmax(0,1.1fr)_minmax(0,2fr)_auto] sm:items-center sm:gap-5">
+              <div className="font-mono text-[13px] font-semibold text-ink">{x.term}</div>
+              <div className="text-[15px] leading-[1.5] text-muted">{x.means}</div>
+              <span className={`w-fit rounded-full px-3 py-1 text-xs font-bold ${levelCls[x.level]}`}>{d.levels[x.level]}</span>
+            </div>
+          ))}
+        </div>
+      </Wrap>
+
+      <Wrap className="pt-14">
+        <H2 className="mb-5">{d.stepsTitle}</H2>
+        <ol className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">
+          {d.steps.map((x, i) => (
+            <li key={x.t} className="rounded-[20px] bg-paper p-6">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sun text-sm font-extrabold text-white">{i + 1}</div>
+              <div className="mb-1.5 mt-3.5 text-[18px] font-extrabold tracking-[-0.02em]">{x.t}</div>
+              <p className="text-[15px] leading-[1.55] text-muted">{x.d}</p>
+            </li>
+          ))}
+        </ol>
+      </Wrap>
+
+      <Wrap className="pt-14">
+        <H2>{d.featuredTitle}</H2>
+        <p className="mb-5 mt-2 text-muted">{d.featuredLede}</p>
+        <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(270px,1fr))]">
+          {featured.map(({ h, p }) => {
+            const v = bestView(h, p.id)!
+            const hp = route(`hotel:${h.id}`)
+            return (
+              <Link key={h.id} href={hp ? hp.paths[l] : href(`view:${p.id}`, l)} className="block rounded-[20px] bg-paper p-2 hover:shadow-[0_12px_30px_rgba(20,30,60,.12)]">
+                <div className="relative h-[180px] overflow-hidden rounded-[14px] bg-[#DDE3EE]">
+                  {h.image && <img src={h.image} alt={h.name} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />}
+                  <span className="absolute left-2.5 top-2.5 rounded-full bg-ok px-2.5 py-1 text-xs font-bold text-white">{bare(p.name[l]).replace(/^./, (x) => x.toUpperCase())}</span>
+                </div>
+                <div className="px-2 pb-2 pt-3">
+                  <div className="flex justify-between gap-2"><div className="font-bold">{h.name}</div>{h.rating && <div className="shrink-0 text-sm font-bold"><span className="text-star">★</span> {fmtScore(h.rating, l)}</div>}</div>
+                  <div className="mt-1 font-mono text-[12px] text-muted">“{v.sourceText.length > 70 ? v.sourceText.slice(0, 67) + '…' : v.sourceText}”</div>
+                </div>
+              </Link>
+            )
+          })}
+        </div>
+      </Wrap>
+
+      <Wrap className="pt-14"><Cards cards={c.cards} /></Wrap>
+      <Wrap className="pt-12">
         <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">
           {c.sections.map((s, i) => (
             <div key={s.h} className="rounded-[20px] bg-paper p-7">
@@ -107,6 +195,10 @@ export function HomePage({ l }: { l: Locale }) {
           ))}
         </div>
         <p className="mt-6 text-sm text-muted">{c.lede} <Link href={href('method', l)} className="font-semibold text-sky">{t.methodLink} →</Link></p>
+      </Wrap>
+      <Wrap className="pb-20 pt-14">
+        <H2 className="mb-4">{d.faqTitle}</H2>
+        <Faq items={d.faq} />
       </Wrap>
     </main>
   )
