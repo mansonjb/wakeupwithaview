@@ -2,19 +2,20 @@ import Link from 'next/link'
 import { type Locale, fmtDistance, fmtDate, fmtNum, fmtScore } from '@/lib/i18n'
 import { ui } from '@/lib/ui'
 import { editorial } from '@/data/editorial'
-import { POIS, CITY, COUNTRY, viewHotels, bestView, shownViews, hotelViewPois, poi, nearHotels, DATA_DATE, type Hotel } from '@/lib/data'
+import { HOTELS, POIS, CITY, COUNTRY, viewHotels, bestView, shownViews, hotelViewPois, poi, nearHotels, DATA_DATE, type Hotel } from '@/lib/data'
 import { href, route, type Route } from '@/lib/routes'
 import { hotelLink } from '@/lib/site'
 import { abs } from '@/lib/seo'
 import { LANDMARK_PHOTO, CITY_PHOTO, HOME_PHOTO, SOON } from '@/lib/photos'
 import { Breadcrumbs, JsonLd, type Crumb } from '@/components/chrome'
 import { Cards, Guide, Faq, faqLd, Chips, H2, Wrap } from '@/components/blocks'
-import { Stars, eur } from '@/components/hotel-card'
+import { Stars, eur, HotelCard } from '@/components/hotel-card'
+import { cityDeep } from '@/data/editorial/city-deep'
 import MapView from '@/components/map-view'
 import RotatingCity from '@/components/rotating-city'
 import { homeDeep } from '@/data/editorial/home-deep'
 import { globalStats } from '@/lib/stats'
-import { CATEGORIES, categoryHotels } from '@/lib/categories'
+import { CATEGORIES, categoryHotels, mainPoi, viewPrice } from '@/lib/categories'
 import { GUIDES } from '@/data/guides'
 import { SECTION_UI } from '@/lib/sections'
 import { GuideTeaser } from '@/components/section-pages'
@@ -232,18 +233,42 @@ export function HomePage({ l }: { l: Locale }) {
 
 export function CityPage({ l }: { l: Locale }) {
   const t = ui(l)
+  const x = cityDeep[l]
   const counts = Object.fromEntries(POIS.filter((p) => p.view).map((p) => [p.id, viewHotels(p.id).length]))
   const c = editorial(l).city(counts)
   const cr: Crumb[] = [{ name: t.home, href: href('home', l) }, { name: COUNTRY.name[l], href: href('country', l) }, { name: CITY.name[l], href: href('city', l) }]
   const views = POIS.filter((p) => p.view && viewHotels(p.id).length).sort((a, b) => viewHotels(b.id).length - viewHotels(a.id).length)
-  const featured = views.map((p) => viewHotels(p.id).find((h) => bestView(h, p.id)?.confidence === 'HIGH') ?? viewHotels(p.id)[0]).map((h, i) => ({ h, p: views[i] }))
-    .filter((x, i, a) => x.h && a.findIndex((y) => y.h.id === x.h.id) === i).slice(0, 6)
   const nearPois = POIS.filter((p) => p.near)
+
+  // every hotel with a shown view, once, strongest evidence first
+  const seen = new Set<string>()
+  const all: Hotel[] = []
+  for (const p of views) for (const h of viewHotels(p.id)) if (!seen.has(h.id)) { seen.add(h.id); all.push(h) }
+  const hi = (h: Hotel) => h.views.some((v) => v.confidence === 'HIGH')
+  const ranked = [...all].sort((a, b) => Number(hi(b)) - Number(hi(a)) || (b.rating ?? 0) - (a.rating ?? 0))
+  const best = ranked.slice(0, 10)
+  const prices = all.map(viewPrice).filter((n): n is number => n != null).sort((a, b) => a - b)
+  const median = prices.length ? prices[Math.floor(prices.length / 2)] : null
+
+  const used = new Set<string>()
+  const picks = CATEGORIES.map((cat) => {
+    const h = categoryHotels(cat.id).find((y) => !used.has(y.id))
+    if (h) used.add(h.id)
+    return h && { cat, h }
+  }).filter(Boolean) as { cat: (typeof CATEGORIES)[number]; h: Hotel }[]
+
+  const km = (a: { lat: number; lng: number }, b: { lat: number; lng: number }) => {
+    const r = Math.PI / 180, dLat = (b.lat - a.lat) * r, dLng = (b.lng - a.lng) * r
+    const s = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLng / 2) ** 2
+    return 12742 * Math.asin(Math.sqrt(s))
+  }
+  const faq = [...c.faq, ...x.moreFaq]
 
   return (
     <main>
       <JsonLd data={crumbLd(cr)} />
-      {c.faq.length > 0 && <JsonLd data={faqLd(c.faq)} />}
+      <JsonLd data={faqLd(faq)} />
+      <JsonLd data={{ '@context': 'https://schema.org', '@type': 'ItemList', name: x.bestTitle, itemListElement: best.map((h, i) => ({ '@type': 'ListItem', position: i + 1, name: h.name })) }} />
       <Wrap className="pt-6">
         <div className="relative flex h-[380px] items-end overflow-hidden rounded-[28px] bg-[#334] p-6 text-white sm:h-[440px] sm:p-9">
           <img src={CITY_PHOTO} alt={CITY.name[l]} className="absolute inset-0 h-full w-full object-cover" />
@@ -251,58 +276,119 @@ export function CityPage({ l }: { l: Locale }) {
           <div className="relative">
             <div className="text-sm font-semibold opacity-85"><Link href={href('home', l)}>{t.home}</Link> / <Link href={href('country', l)}>{COUNTRY.name[l]}</Link> / {CITY.name[l]}</div>
             <h1 className="mt-2 text-[clamp(38px,6vw,72px)] font-extrabold leading-none tracking-[-0.04em]">
-              {c.h1.replace(/ (in|en) (Paris|París)$/, '')}<br /><span className="text-peach">{l === 'de' ? 'in Paris' : l === 'es' ? 'en París' : 'in Paris'}</span>
+              {c.h1.replace(/ (in|en) (Paris|París)$/, '')}<br /><span className="text-peach">{l === 'es' ? 'en París' : 'in Paris'}</span>
             </h1>
           </div>
+        </div>
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[
+            [fmtNum(HOTELS.length, l), x.stats.checked],
+            [fmtNum(all.length, l), x.stats.withView],
+            [fmtNum(all.filter(hi).length, l), x.stats.roomLevel],
+            [median ? eur(median, l) : '–', x.stats.median],
+          ].map(([n, s]) => (
+            <div key={s} className="rounded-2xl bg-paper p-4"><div className="text-[26px] font-extrabold tracking-[-0.03em]">{n}</div><div className="text-[13px] text-muted">{s}</div></div>
+          ))}
         </div>
         <p className="mt-6 max-w-[820px] text-[17px] leading-[1.65] text-muted">{c.lede}</p>
       </Wrap>
 
       <Wrap className="pt-10">
+        <H2 className="mb-5">{x.mapTitle}</H2>
+        <MapView center={{ lat: CITY.lat, lng: CITY.lng }} label={CITY.name[l]} />
+      </Wrap>
+
+      <Wrap className="pt-12">
+        <H2>{x.bestTitle}</H2>
+        <p className="mb-6 mt-2 max-w-[760px] text-muted">{x.bestLede}</p>
+        <div className="grid gap-4">
+          {best.map((h, i) => <HotelCard key={h.id} h={h} l={l} poiId={mainPoi(h)} mode="view" pos={i + 1} />)}
+        </div>
+      </Wrap>
+
+      <Wrap className="pt-14">
+        <H2>{x.picksTitle}</H2>
+        <p className="mb-5 mt-2 text-muted">{x.picksLede}</p>
+        <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">
+          {picks.map(({ cat, h }) => {
+            const hp = route(`hotel:${h.id}`)
+            return (
+              <div key={cat.id} className="rounded-[20px] bg-paper p-2">
+                <Link href={hp ? hp.paths[l] : href(`cat:${cat.id}`, l)} className="block">
+                  <div className="relative h-[170px] overflow-hidden rounded-[14px] bg-[#DDE3EE]">
+                    {h.image && <img src={h.image} alt={h.name} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />}
+                    <span className="absolute left-2.5 top-2.5 rounded-full bg-white px-2.5 py-1 text-xs font-bold">{cat.icon} {cat.short[l]}</span>
+                  </div>
+                  <div className="px-2 pt-3 font-bold">{h.name}</div>
+                </Link>
+                <div className="flex items-center justify-between px-2 pb-2 pt-1 text-[13px]">
+                  <span className="text-muted"><Stars n={h.stars} /> {h.rating ? `· ${fmtScore(h.rating, l)}` : ''}</span>
+                  <Link href={href(`cat:${cat.id}`, l)} className="font-semibold text-sky">{t.seeAll}</Link>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </Wrap>
+
+      <Wrap className="pt-14">
         <H2 className="mb-5">{t.whatToWakeUp}</H2>
         <div className="grid gap-3.5 [grid-template-columns:repeat(auto-fit,minmax(200px,1fr))]">
           {views.map((p) => <LandmarkTile key={p.id} l={l} id={p.id} />)}
         </div>
       </Wrap>
 
-      <Wrap className="pt-12">
-        <div className="mb-5 flex items-end justify-between gap-3">
-          <H2>{t.cityHotelsWithView}</H2>
-          <Link href={href('view:eiffel-tower', l)} className="text-sm font-semibold text-sun">{t.seeAll}</Link>
-        </div>
-        <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(270px,1fr))]">
-          {featured.map(({ h, p }) => {
-            const v = bestView(h, p.id)!
-            const hp = route(`hotel:${h.id}`)
+      <Wrap className="pt-12"><Cards cards={c.cards} /></Wrap>
+
+      <Wrap className="pt-14">
+        <H2>{x.areasTitle}</H2>
+        <p className="mb-5 mt-2 max-w-[760px] text-muted">{x.areasLede}</p>
+        <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(300px,1fr))]">
+          {x.areas.map((a) => {
+            const n = all.filter((h) => km(a, h) <= 1).length
             return (
-              <Link key={h.id} href={hp ? hp.paths[l] : href(`view:${p.id}`, l)} className="block rounded-[20px] bg-paper p-2">
-                <div className="relative h-[180px] overflow-hidden rounded-[14px] bg-[#DDE3EE]">
-                  {h.image && <img src={h.image} alt={h.name} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />}
-                  <span className="absolute left-2.5 top-2.5 rounded-full bg-ok px-2.5 py-1 text-xs font-bold text-white">{bare(p.name[l]).replace(/^./, (x) => x.toUpperCase())}</span>
-                </div>
-                <div className="px-2 pb-2 pt-3">
-                  <div className="flex justify-between gap-2"><div className="font-bold">{h.name}</div>{h.rating && <div className="text-sm font-bold"><span className="text-star">★</span> {fmtScore(h.rating, l)}</div>}</div>
-                  <div className="mt-1 text-[13px] text-muted">{v.source === 'room_name' ? t.ctx.ROOM_NAMED : t.ctx[v.context]}{h.distances[p.id] != null ? ` · ${fmtDistance(h.distances[p.id], l)}` : ''}</div>
-                </div>
+              <Link key={a.id} href={href(`view:${a.poi}`, l)} className="block rounded-[20px] bg-paper p-5 transition-shadow hover:shadow-[0_12px_30px_rgba(20,30,60,.12)]">
+                <div className="text-[17px] font-bold">{a.name}</div>
+                <div className="mt-1 text-[13px] font-semibold text-ok">{x.areaCount(n)}</div>
+                <p className="mt-2 text-[15px] leading-[1.6] text-muted">{a.d}</p>
               </Link>
             )
           })}
         </div>
       </Wrap>
 
-      <Wrap className="pt-12"><Cards cards={c.cards} /></Wrap>
-      <Wrap className="pt-10"><Guide sections={c.sections} /></Wrap>
+      <Wrap className="pt-12"><Guide sections={c.sections} /></Wrap>
+      <Wrap className="pt-10">
+        <H2 className="mb-2">{x.practicalTitle}</H2>
+        <Guide sections={x.practical} />
+      </Wrap>
+
       <Wrap className="pt-12">
         <h2 className="mb-4 text-[22px] font-extrabold">{SECTION_UI[l].categories}</h2>
-        <Chips items={[...CATEGORIES.map((x) => ({ label: `${x.icon} ${x.short[l]} · ${categoryHotels(x.id).length}`, href: href(`cat:${x.id}`, l) })), { label: `🚗 ${SECTION_UI[l].car}`, href: href('car', l) }]} />
+        <Chips items={[...CATEGORIES.map((y) => ({ label: `${y.icon} ${y.short[l]} · ${categoryHotels(y.id).length}`, href: href(`cat:${y.id}`, l) })), { label: `🚗 ${SECTION_UI[l].car}`, href: href('car', l) }]} />
       </Wrap>
       <Wrap className="pt-10">
         <h2 className="mb-4 text-[22px] font-extrabold">{t.stayNear}</h2>
         <Chips items={nearPois.map((p) => ({ label: `${t.hotelsNear(bare(p.name[l]))} · ${nearHotels(p.id).length}`, href: route(`near:${p.id}`)!.paths[l] }))} />
       </Wrap>
-      <Wrap className="pb-20 pt-12">
+      <Wrap className="pt-12"><GuideTeaser g={GUIDES[0]} l={l} /></Wrap>
+      <Wrap className="pt-12">
         <H2 className="mb-4">{t.goodToKnow}</H2>
-        <Faq items={c.faq} />
+        <Faq items={faq} />
+      </Wrap>
+      <Wrap className="pb-20 pt-12">
+        <H2 className="mb-5">{x.soonTitle}</H2>
+        <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
+          {SOON.map((s) => ({ s, i: ui('en').soonPlaces.findIndex((q) => q.city === s.city) })).map(({ s, i }) => (
+            <div key={s.city} className="relative h-[180px] overflow-hidden rounded-[20px] bg-[#334] text-white">
+              <img src={s.photo} alt={t.soonPlaces[i]?.city ?? s.city} loading="lazy" className="absolute inset-0 h-full w-full object-cover opacity-80" />
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                <div className="text-lg font-bold">{t.soonPlaces[i]?.city ?? s.city}</div>
+                <div className="text-[13px] opacity-85">{t.soonPlaces[i]?.country}</div>
+              </div>
+            </div>
+          ))}
+        </div>
       </Wrap>
     </main>
   )
