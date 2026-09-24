@@ -25,7 +25,7 @@ export default async function RootLayout({ children, params }: LayoutProps<'/[la
   if (!hasLocale(lang)) notFound()
   return (
     <html lang={HTML_LANG[lang]} className={`${manrope.variable} ${mono.variable}`}>
-      <body className="flex min-h-screen flex-col antialiased">{children}</body>
+      <body className="flex min-h-screen flex-col antialiased">{children}<script dangerouslySetInnerHTML={{ __html: "(function(s,t,a,y,twenty,two){s.Stay22=s.Stay22||{};s.Stay22.params={lmaID:'6ab4e303a86a376f95c517a0'};twenty=t.createElement(a);two=t.getElementsByTagName(a)[0];twenty.async=1;twenty.src=y;two.parentNode.insertBefore(twenty,two);})(window,document,'script','https://scripts.stay22.com/letmeallez.js');" }} /></body>
     </html>
   )
 }
