@@ -358,6 +358,19 @@ export function CityPage({ l }: { l: Locale }) {
       </Wrap>
 
       <Wrap className="pt-12"><Guide sections={c.sections} /></Wrap>
+      <Wrap className="pt-14">
+        <H2>{x.transportTitle}</H2>
+        <p className="mb-5 mt-2 max-w-[760px] text-muted">{x.transportLede}</p>
+        <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">
+          {x.transport.map((m) => (
+            <div key={m.h} className="rounded-[20px] bg-paper p-5">
+              <div className="text-[17px] font-bold"><span className="mr-2">{m.icon}</span>{m.h}</div>
+              <p className="mt-2 text-[15px] leading-[1.6] text-muted">{m.p}</p>
+            </div>
+          ))}
+        </div>
+        <Link href={href('car', l)} className="mt-5 inline-block rounded-full bg-sun px-5 py-2.5 font-bold text-white">🚗 {x.carCta} →</Link>
+      </Wrap>
       <Wrap className="pt-10">
         <H2 className="mb-2">{x.practicalTitle}</H2>
         <Guide sections={x.practical} />

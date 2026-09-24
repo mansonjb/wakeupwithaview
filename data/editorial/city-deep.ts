@@ -14,6 +14,10 @@ export type CityDeep = {
   areasLede: string
   areaCount: (n: number) => string
   areas: Area[]
+  transportTitle: string
+  transportLede: string
+  transport: { icon: string; h: string; p: string }[]
+  carCta: string
   practicalTitle: string
   practical: Section[]
   moreFaq: QA[]
@@ -50,11 +54,22 @@ export const cityDeep: Record<Locale, CityDeep> = {
       ['Étoile, 8th and 17th', 'Around the Arc de Triomphe. Wide avenues mean open views from the upper floors, and a direct metro line to the Louvre.'],
       ['Saint-Germain, 6th', 'Close to the river and the Louvre across the bridge. Fewer landmark views, more rooftops and courtyards.'],
     ]),
+    transportTitle: 'Getting to and around Paris',
+    transportLede: 'Two big airports, six mainline stations and one of the densest metro networks in the world. Most visitors never need a car in the city.',
+    transport: [
+      { icon: '✈', h: 'Charles de Gaulle (CDG)', p: 'The main international airport, north of the city. The RER B train runs to Gare du Nord, Châtelet and the Latin Quarter in about 35 to 45 minutes. Taxis charge a fixed fare to the Right Bank and a slightly higher one to the Left Bank.' },
+      { icon: '✈', h: 'Orly (ORY)', p: 'South of the city, mostly European and domestic flights. Metro line 14 now runs from the terminals straight to the centre, the simplest option. Fixed taxi fares apply here too.' },
+      { icon: '✈', h: 'Beauvais (BVA)', p: 'Used by low-cost airlines, about 85 km north. A shuttle bus runs to Porte Maillot in western Paris; allow well over an hour.' },
+      { icon: '🚆', h: 'Arriving by train', p: 'Gare du Nord for London, Brussels and Amsterdam; Gare de l’Est for eastern France and Germany; Gare de Lyon for the south, the Alps, Switzerland and Italy; Montparnasse for Brittany and the south-west.' },
+      { icon: '🚇', h: 'Metro and RER', p: '16 metro lines and 5 RER lines cover every neighbourhood on this page. Stations are close together in the centre, so the next one is rarely more than a few minutes on foot.' },
+      { icon: '🚶', h: 'On foot and by bike', p: 'The centre is compact: the Eiffel Tower to Notre-Dame is about an hour’s walk along the Seine. Vélib’ shared bikes and a large network of cycle lanes make short hops easy.' },
+      { icon: '🚕', h: 'Taxis and ride-hailing', p: 'Official taxis can be hailed or taken at ranks; ride-hailing apps work too. Useful late at night with luggage, slower than the metro at rush hour.' },
+      { icon: '🚗', h: 'Driving', p: 'Not worth it inside Paris: traffic, low-emission rules and expensive parking. A car makes sense for day trips (Versailles, Giverny, Champagne, the Loire), picked up on the way out.' },
+    ],
+    carCta: 'Rent a car for day trips',
     practicalTitle: 'Practical Paris',
     practical: [
       { h: 'When the views are best', p: ['Clear winter days after rain give the sharpest views across the city. In June the sun sets after 9.30 pm, so an evening view from the room lasts long. After dark, the Eiffel Tower sparkles for five minutes every hour on the hour.'] },
-      { h: 'Getting in from the airports', p: ['From Charles de Gaulle, the RER B train runs to Gare du Nord, Châtelet and the Latin Quarter. From Orly, metro line 14 now runs straight into the centre. A taxi from either airport has a fixed fare to the Right Bank or the Left Bank.'] },
-      { h: 'Getting around', p: ['Paris is compact and very walkable. The metro reaches every neighbourhood on this page; the line 6 section between Passy and Bir-Hakeim runs above ground and crosses the Seine facing the Eiffel Tower.'] },
     ],
     moreFaq: [
       { q: 'Are hotels with an Eiffel Tower view more expensive?', a: 'Usually, but not always by much. We show the dated price of the cheapest room category that names the view, next to the hotel’s cheapest room, so you can see the difference for yourself.' },
@@ -81,11 +96,22 @@ export const cityDeep: Record<Locale, CityDeep> = {
       ['Étoile, distritos 8 y 17', 'Alrededor del Arco de Triunfo. Las avenidas anchas abren las vistas desde las plantas altas, con metro directo al Louvre.'],
       ['Saint-Germain, distrito 6', 'Cerca del río y del Louvre al otro lado del puente. Menos monumentos a la vista, más tejados y patios.'],
     ]),
+    transportTitle: 'Cómo llegar y moverse por París',
+    transportLede: 'Dos grandes aeropuertos, seis estaciones de tren y una de las redes de metro más densas del mundo. La mayoría de los viajeros no necesitan coche en la ciudad.',
+    transport: [
+      { icon: '✈', h: 'Charles de Gaulle (CDG)', p: 'El principal aeropuerto internacional, al norte. El tren RER B llega a Gare du Nord, Châtelet y el Barrio Latino en unos 35 a 45 minutos. Los taxis tienen tarifa fija a la orilla derecha y otra algo más alta a la izquierda.' },
+      { icon: '✈', h: 'Orly (ORY)', p: 'Al sur de la ciudad, sobre todo vuelos europeos y nacionales. La línea 14 del metro va ahora desde las terminales directamente al centro, la opción más sencilla. También aquí hay tarifas fijas de taxi.' },
+      { icon: '✈', h: 'Beauvais (BVA)', p: 'Lo usan las aerolíneas de bajo coste, a unos 85 km al norte. Un autobús lanzadera llega a Porte Maillot, al oeste de París; calcula bastante más de una hora.' },
+      { icon: '🚆', h: 'Llegar en tren', p: 'Gare du Nord para Londres, Bruselas y Ámsterdam; Gare de l’Est para el este de Francia y Alemania; Gare de Lyon para el sur, los Alpes, Suiza e Italia; Montparnasse para Bretaña y el suroeste.' },
+      { icon: '🚇', h: 'Metro y RER', p: '16 líneas de metro y 5 de RER cubren todos los barrios de esta página. En el centro las estaciones están muy juntas: la siguiente rara vez queda a más de unos minutos a pie.' },
+      { icon: '🚶', h: 'A pie y en bici', p: 'El centro es compacto: de la Torre Eiffel a Notre-Dame hay alrededor de una hora andando junto al Sena. Las bicis compartidas Vélib’ y los carriles bici facilitan los trayectos cortos.' },
+      { icon: '🚕', h: 'Taxis y VTC', p: 'Los taxis oficiales se paran en la calle o en paradas; las aplicaciones de VTC también funcionan. Útiles de noche con equipaje, más lentos que el metro en hora punta.' },
+      { icon: '🚗', h: 'Conducir', p: 'No compensa dentro de París: tráfico, zona de bajas emisiones y aparcamiento caro. El coche tiene sentido para excursiones (Versalles, Giverny, Champaña, el Loira), recogiéndolo al salir.' },
+    ],
+    carCta: 'Alquilar un coche para excursiones',
     practicalTitle: 'París práctico',
     practical: [
       { h: 'Cuándo se ve mejor', p: ['Los días despejados de invierno después de la lluvia dan las vistas más nítidas. En junio el sol se pone después de las 21:30, así que la vista desde la habitación dura mucho. De noche, la Torre Eiffel centellea cinco minutos al comienzo de cada hora.'] },
-      { h: 'Desde los aeropuertos', p: ['Desde Charles de Gaulle, el tren RER B llega a Gare du Nord, Châtelet y el Barrio Latino. Desde Orly, la línea 14 del metro llega directamente al centro. El taxi desde ambos aeropuertos tiene tarifa fija a cada orilla.'] },
-      { h: 'Moverse por la ciudad', p: ['París es compacta y se recorre muy bien a pie. El metro llega a todos los barrios de esta página; el tramo de la línea 6 entre Passy y Bir-Hakeim va en superficie y cruza el Sena frente a la Torre Eiffel.'] },
     ],
     moreFaq: [
       { q: '¿Son más caros los hoteles con vistas a la Torre Eiffel?', a: 'Normalmente sí, aunque no siempre mucho. Mostramos el precio fechado de la categoría más barata que nombra las vistas junto a la habitación más barata del hotel, para que veas la diferencia.' },
@@ -112,11 +138,22 @@ export const cityDeep: Record<Locale, CityDeep> = {
       ['Étoile, 8. und 17. Arrondissement', 'Rund um den Arc de Triomphe. Breite Avenuen öffnen den Blick aus den oberen Etagen, mit direkter Metro zum Louvre.'],
       ['Saint-Germain, 6. Arrondissement', 'Nah am Fluss, der Louvre gleich über die Brücke. Weniger Wahrzeichen im Blick, dafür Dächer und Innenhöfe.'],
     ]),
+    transportTitle: 'Anreise und Unterwegs in Paris',
+    transportLede: 'Zwei große Flughäfen, sechs Fernbahnhöfe und eines der dichtesten Metronetze der Welt. In der Stadt braucht fast niemand ein Auto.',
+    transport: [
+      { icon: '✈', h: 'Charles de Gaulle (CDG)', p: 'Der wichtigste internationale Flughafen, nördlich der Stadt. Der RER B fährt in etwa 35 bis 45 Minuten zur Gare du Nord, nach Châtelet und ins Quartier Latin. Taxis haben einen Festpreis zum rechten Ufer und einen etwas höheren zum linken.' },
+      { icon: '✈', h: 'Orly (ORY)', p: 'Südlich der Stadt, vor allem Europa- und Inlandsflüge. Die Metrolinie 14 fährt jetzt von den Terminals direkt ins Zentrum, die einfachste Lösung. Auch hier gelten Taxi-Festpreise.' },
+      { icon: '✈', h: 'Beauvais (BVA)', p: 'Von Billigfliegern genutzt, rund 85 km nördlich. Ein Shuttlebus fährt zur Porte Maillot im Westen von Paris; deutlich mehr als eine Stunde einplanen.' },
+      { icon: '🚆', h: 'Anreise mit dem Zug', p: 'Gare du Nord für London, Brüssel und Amsterdam; Gare de l’Est für Ostfrankreich und Deutschland; Gare de Lyon für den Süden, die Alpen, die Schweiz und Italien; Montparnasse für die Bretagne und den Südwesten.' },
+      { icon: '🚇', h: 'Metro und RER', p: '16 Metro- und 5 RER-Linien erreichen alle Viertel auf dieser Seite. Im Zentrum liegen die Stationen dicht beieinander, die nächste ist selten mehr als ein paar Minuten zu Fuß entfernt.' },
+      { icon: '🚶', h: 'Zu Fuß und mit dem Rad', p: 'Das Zentrum ist kompakt: Vom Eiffelturm nach Notre-Dame läuft man an der Seine entlang etwa eine Stunde. Leihräder von Vélib’ und viele Radwege machen kurze Strecken einfach.' },
+      { icon: '🚕', h: 'Taxi und Fahrdienste', p: 'Offizielle Taxis hält man an oder nimmt sie am Stand; Fahrdienst-Apps funktionieren ebenfalls. Praktisch spät abends mit Gepäck, zur Stoßzeit langsamer als die Metro.' },
+      { icon: '🚗', h: 'Mit dem Auto', p: 'In Paris selbst lohnt es sich nicht: Verkehr, Umweltzone und teures Parken. Für Tagesausflüge (Versailles, Giverny, Champagne, Loire) ist ein Mietwagen sinnvoll, abgeholt bei der Abfahrt.' },
+    ],
+    carCta: 'Mietwagen für Tagesausflüge',
     practicalTitle: 'Paris praktisch',
     practical: [
       { h: 'Wann die Aussicht am besten ist', p: ['Klare Wintertage nach Regen bringen die schärfste Fernsicht. Im Juni geht die Sonne nach 21:30 Uhr unter, der Abendblick aus dem Zimmer hält also lange. Nach Einbruch der Dunkelheit glitzert der Eiffelturm zu jeder vollen Stunde fünf Minuten lang.'] },
-      { h: 'Vom Flughafen in die Stadt', p: ['Von Charles de Gaulle fährt der RER B zur Gare du Nord, nach Châtelet und ins Quartier Latin. Von Orly fährt die Metrolinie 14 direkt ins Zentrum. Taxis haben von beiden Flughäfen einen Festpreis je Seineufer.'] },
-      { h: 'Unterwegs in Paris', p: ['Paris ist kompakt und gut zu Fuß zu erkunden. Die Metro erreicht alle Viertel auf dieser Seite; die Linie 6 fährt zwischen Passy und Bir-Hakeim oberirdisch und überquert die Seine direkt gegenüber dem Eiffelturm.'] },
     ],
     moreFaq: [
       { q: 'Sind Hotels mit Eiffelturmblick teurer?', a: 'Meist ja, aber nicht immer viel. Wir zeigen den datierten Preis der günstigsten Kategorie mit Blick neben dem günstigsten Zimmer des Hotels, damit du den Unterschied selbst siehst.' },
