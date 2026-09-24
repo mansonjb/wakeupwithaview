@@ -314,6 +314,12 @@ export function CityPage({ l }: { l: Locale }) {
       </Wrap>
 
       <Wrap className="pt-10">
+        <H2 className="mb-5">{t.whatToWakeUp}</H2>
+        <div className="grid gap-3.5 [grid-template-columns:repeat(auto-fit,minmax(200px,1fr))]">
+          {views.map((p) => <LandmarkTile key={p.id} l={l} id={p.id} />)}
+        </div>
+      </Wrap>
+      <Wrap className="pt-10">
         <H2 className="mb-5">{x.mapTitle}</H2>
         <MapView center={{ lat: CITY.lat, lng: CITY.lng }} label={CITY.name[l]} />
       </Wrap>
@@ -351,12 +357,6 @@ export function CityPage({ l }: { l: Locale }) {
         </div>
       </Wrap>
 
-      <Wrap className="pt-14">
-        <H2 className="mb-5">{t.whatToWakeUp}</H2>
-        <div className="grid gap-3.5 [grid-template-columns:repeat(auto-fit,minmax(200px,1fr))]">
-          {views.map((p) => <LandmarkTile key={p.id} l={l} id={p.id} />)}
-        </div>
-      </Wrap>
 
       <Wrap className="pt-14">
         <H2 className="mb-5">{x.historyTitle}</H2>
