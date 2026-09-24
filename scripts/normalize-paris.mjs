@@ -29,6 +29,7 @@ const CONTEXTS = [
   ['ROOFTOP', /roof\s?top\s+(terrace|bar|restaurant|pool|garden|lounge)|roof\s+terrace|top[- ]floor\s+(terrace|bar|restaurant)/i],
   ['RESTAURANT', /restaurant|dining room/i],
   ['BAR', /\bbar\b/i],
+  ['COMMON_AREA', /fitness|gym\b|hammam|\bspa\b(?! bath)|lobby|lounge|library|breakfast room/i],
   ['BALCONY', /balcon\w*\s+(with|offering|overlooking)/i],
   ['TERRACE', /terraces?\s+(with|offering|overlooking)/i],
   ['ROOM', /\brooms?\b|suites?\b|\bsome have\b|mansard|floor/i],
