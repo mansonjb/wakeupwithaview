@@ -22,8 +22,10 @@ function Tri({ label, v, l }: { label: string; v: true | null | undefined; l: Lo
 }
 
 /** One hotel, in VIEW or NEAR mode. The CTA goes to the affiliate layer with full tracking context. */
-export function HotelCard({ h, l, poiId, mode, pos, city = 'paris' }: {
+export function HotelCard({ h, l, poiId, mode, pos, city = 'paris', compact = false }: {
   h: Hotel; l: Locale; poiId: string; mode: 'view' | 'near'; pos: number; city?: string
+  /** hide amenity chips that are unknown (they stay UNKNOWN in data, only not displayed) */
+  compact?: boolean
 }) {
   const t = ui(l)
   const lm = poi(poiId)
@@ -94,9 +96,9 @@ export function HotelCard({ h, l, poiId, mode, pos, city = 'paris' }: {
         )}
 
         <div className="flex flex-wrap gap-1.5">
-          <Tri label={t.balcony} v={balcony} l={l} />
-          <Tri label={t.terrace} v={h.amenities.terrace} l={l} />
-          <Tri label={t.rooftop} v={h.amenities.rooftop} l={l} />
+          {([[t.balcony, balcony], [t.terrace, h.amenities.terrace], [t.rooftop, h.amenities.rooftop]] as const)
+            .filter(([, v]) => !compact || v)
+            .map(([label, v]) => <Tri key={label} label={label} v={v} l={l} />)}
         </div>
 
         <div className="mt-auto flex flex-wrap items-end justify-between gap-2 pt-1">
@@ -107,7 +109,7 @@ export function HotelCard({ h, l, poiId, mode, pos, city = 'paris' }: {
                   {mode === 'view' && h.viewOffers[poiId] ? t.viewPrice(eur(h.viewOffers[poiId], l)) : `${t.from} ${eur(h.offer.from, l)}`}
                 </span>
                 <br />
-                {fmtDate(h.offer.checkIn, l)} · 2 · {t.lastChecked(fmtDate(h.offer.retrievedAt, l))}
+                {fmtDate(h.offer.checkIn, l)} · {t.adults} · {t.lastChecked(fmtDate(h.offer.retrievedAt, l))}
               </>
             ) : t.checkPrice}
           </div>

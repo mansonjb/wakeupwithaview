@@ -29,3 +29,21 @@ room names, ratings, prices) come from `data/raw/` (Booking.com listings collect
 
 ## To verify before scaling copy
 - Haussmann balconies on 2nd and 5th floors (architectural convention, widely documented).
+
+## Paris city page (checked 2026-09-24)
+- 1859 height decree 17.55 m / 20 m on streets >20 m: https://mymodernmet.com/haussmann-paris-architecture/ , https://en.wikipedia.org/wiki/Boulevard_Haussmann
+- Eiffel Tower finished 31/03/1889, World's Fair, 330 m with antenna: https://www.toureiffel.paris/en/the-monument/history , https://en.wikipedia.org/wiki/Eiffel_Tower
+- Montmartre ~130 m highest natural point: https://en.wikipedia.org/wiki/Geography_of_Paris ; Sacré-Cœur completed 1914, ~300 steps dome: https://en.wikipedia.org/wiki/Sacr%C3%A9-C%C5%93ur,_Paris
+- Notre-Dame towers reopened Sept 2025, 422 steps: https://parisjetaime.com/eng/culture/tours-de-notre-dame-de-paris-p3540
+- Arc de Triomphe 284 steps: https://www.paris-arc-de-triomphe.fr/
+- Galeries Lafayette 8th-floor free terrace: https://haussmann.galerieslafayette.com/en/the-terrace-at-galeries-lafayette/
+- Printemps 9th-floor free terrace, IMA free roof terrace (Tue-Sun), Parc de Belleville 108 m: https://www.sortiraparis.com/en/what-to-visit-in-paris/walks/guides/277311-elevated-viewpoints-in-paris-our-best-free-or-nearly-free-spots-for-the-city-s-most-stunning-views
+- Buttes-Chaumont Temple de la Sibylle on 30 m rock: https://en.wikipedia.org/wiki/Parc_des_Buttes_Chaumont
+- Metro 6 viaduct Passy–Bir-Hakeim over Pont de Bir-Hakeim: https://en.wikipedia.org/wiki/Passy_station
+- Tour Montparnasse observatory closed 31/03/2026, works until at least 2030: https://euronews.com/travel/2026/02/23/iconic-paris-observation-deck-set-to-close-for-renovations-next-month
+- Taxi flat fares 2026 (CDG 56/65, Orly 45 RD / 36 RG): https://www.service-public.gouv.fr/particuliers/actualites/A15396
+- Line 14 to Orly since 24/06/2024, ~25 min to Châtelet: https://www.ratp.fr/en/extension-metro-line-14 , https://en.wikipedia.org/wiki/A%C3%A9roport_d%27Orly_station
+- RER B CDG–Gare du Nord ~35 min; Beauvais shuttle to Porte Maillot ~1h15: https://www.aeroportparisbeauvais.com/en/access-parking/paris-airport-shuttle
+- 16 metro lines / 321 stations, RER A–E: https://en.wikipedia.org/wiki/List_of_Paris_Metro_stations , https://en.wikipedia.org/wiki/R%C3%A9seau_Express_R%C3%A9gional
+- ZFE: Crit'Air 3/4/5 banned weekdays 8am-8pm since 2025: https://www.paris.fr/pages/la-zone-a-faibles-emissions-zfe-pour-lutter-contre-la-pollution-de-l-air-16799
+- Mainline stations destinations: https://www.seat61.com/changing-stations-in-paris.htm , https://blog.lodgis.com/en/paris-train-stations-guide/
