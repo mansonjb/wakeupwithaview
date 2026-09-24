@@ -16,7 +16,7 @@ export type TrackCtx = {
   landmark?: string
   hotelId?: string
   lang: string
-  pageType: 'view' | 'near' | 'hotel' | 'city' | 'home'
+  pageType: 'view' | 'near' | 'hotel' | 'city' | 'home' | 'guide'
   viewContext?: string
   position?: number
 }

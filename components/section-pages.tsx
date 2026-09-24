@@ -6,6 +6,9 @@ import { href, route, type Route } from '@/lib/routes'
 import { CATEGORIES, categoryHotels, mainPoi, BUDGET_MAX, type Category } from '@/lib/categories'
 import { categoryCopy } from '@/data/editorial/categories'
 import { GUIDES, type Guide } from '@/data/guides'
+import { MONUMENT_GUIDES, type MonumentsGuide } from '@/data/monuments'
+import { poi, viewHotels, nearHotels } from '@/lib/data'
+import { areaLink } from '@/lib/site'
 import { homeDeep } from '@/data/editorial/home-deep'
 import { globalStats } from '@/lib/stats'
 import { abs } from '@/lib/seo'
@@ -82,6 +85,7 @@ export function GuidesIndex({ l }: { l: Locale }) {
       </Wrap>
       <Wrap className="pb-20 pt-8">
         <div className="grid gap-4 md:grid-cols-2">
+          {MONUMENT_GUIDES.map((g) => <MonumentsTeaser key={g.id} g={g} l={l} />)}
           {GUIDES.map((g) => <GuideTeaser key={g.id} g={g} l={l} />)}
         </div>
       </Wrap>
@@ -161,6 +165,80 @@ export function GuidePage({ l, r, g }: { l: Locale; r: Route; g: Guide }) {
       </Wrap>
       <Wrap className="pt-10"><GuideBlocks sections={c.outro} /></Wrap>
       <Wrap className="pb-20 pt-12"><H2 className="mb-4">{t.goodToKnow}</H2><Faq items={c.faq} /></Wrap>
+    </main>
+  )
+}
+
+export function MonumentsTeaser({ g, l }: { g: MonumentsGuide; l: Locale }) {
+  const su = SECTION_UI[l]
+  const c = g.copy[l]
+  return (
+    <Link href={href(`guide:${g.id}`, l)} className="group flex flex-col gap-3 rounded-[20px] bg-paper p-7 hover:shadow-[0_12px_30px_rgba(20,30,60,.12)]">
+      <div className="text-xs font-extrabold uppercase tracking-[.08em] text-sun">{su.guides} · {CITY.name[l]}</div>
+      <div className="balance text-[22px] font-extrabold leading-tight tracking-[-0.02em] group-hover:text-sky">{c.title}</div>
+      <p className="text-[15px] leading-[1.55] text-muted">{c.lede}</p>
+      <div className="mt-auto text-sm font-bold text-sky">{su.read} →</div>
+    </Link>
+  )
+}
+
+/** Monuments guide: per monument, facts + best spot + the hotels that see it (or the closest ones) + booking CTAs. */
+export function MonumentsGuidePage({ l, r, g }: { l: Locale; r: Route; g: MonumentsGuide }) {
+  const t = ui(l)
+  const su = SECTION_UI[l]
+  const c = g.copy[l]
+  const cr: Crumb[] = [{ name: t.home, href: href('home', l) }, { name: su.guides, href: href('guides', l) }, { name: c.h1, href: r.paths[l] }]
+  const rows = c.monuments.map((x) => {
+    const p = poi(x.poi)
+    const vh = viewHotels(x.poi)
+    const hs = vh.length ? vh.slice(0, 3) : nearHotels(x.poi, 1000).slice(0, 3)
+    return { x, p, vh, hs, nNear: nearHotels(x.poi, 1000).length }
+  })
+  const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
+  return (
+    <main>
+      <JsonLd data={crumbLd(cr)} />
+      <JsonLd data={{ '@context': 'https://schema.org', '@type': 'Article', headline: c.title, description: c.meta, inLanguage: l, dateModified: g.updated, datePublished: g.updated, mainEntityOfPage: abs(r.paths[l]), publisher: { '@type': 'Organization', name: 'Wake Up With A View' } }} />
+      <JsonLd data={{ '@context': 'https://schema.org', '@type': 'ItemList', name: c.h1, numberOfItems: rows.length, itemListElement: rows.map((o, i) => ({ '@type': 'ListItem', position: i + 1, name: o.p.name[l], url: abs(`${r.paths[l]}#${o.p.id}`) })) }} />
+      <Wrap className="pt-8">
+        <Breadcrumbs items={cr} />
+        <div className="mt-3 text-xs font-bold uppercase tracking-[.08em] text-sun">{su.updated} {fmtDate(g.updated, l)}</div>
+        <h1 className="balance mb-3 mt-2 max-w-[900px] text-[34px] font-extrabold leading-[1.05] tracking-[-0.04em] sm:text-[48px]">{c.h1}</h1>
+        <p className="max-w-[760px] text-[18px] leading-[1.6] text-muted">{c.lede}</p>
+        <nav aria-label={c.ui.toc} className="mt-6 flex flex-wrap gap-2">
+          {rows.map((o, i) => <a key={o.p.id} href={`#${o.p.id}`} className="rounded-full bg-paper px-3.5 py-2 text-sm font-bold hover:text-sky">{i + 1}. {cap(o.p.name[l])}</a>)}
+        </nav>
+      </Wrap>
+      {rows.map((o, i) => {
+        const name = cap(o.p.name[l])
+        const track = { city: g.city, landmark: o.p.id, lang: l, pageType: 'guide' as const, position: i + 1 }
+        const viewRoute = o.vh.length ? route(`view:${o.p.id}`) : undefined
+        const nearRoute = route(`near:${o.p.id}`)
+        return (
+          <Wrap key={o.p.id} className="pt-12">
+            <article id={o.p.id} className="scroll-mt-24 rounded-[28px] bg-paper p-5 sm:p-8">
+              <div className="text-xs font-extrabold uppercase tracking-[.08em] text-sun">#{String(i + 1).padStart(2, '0')}</div>
+              <H2 className="mt-1">{name}</H2>
+              <p className="mt-3 max-w-[820px] text-[17px] leading-[1.65]">{o.x.what}</p>
+              <div className="mt-5 grid gap-3 md:grid-cols-2">
+                <div className="rounded-2xl bg-canvas p-5"><div className="mb-1.5 text-sm font-extrabold">📍 {c.ui.look}</div><p className="text-[15px] leading-[1.55] text-muted">{o.x.look}</p></div>
+                <div className="rounded-2xl bg-canvas p-5"><div className="mb-1.5 text-sm font-extrabold">💡 {c.ui.tip}</div><p className="text-[15px] leading-[1.55] text-muted">{o.x.tip} <a href={o.x.official} target="_blank" rel="noopener" className="font-bold text-sky">{c.ui.official} ↗</a></p></div>
+              </div>
+              <h3 className="mb-3 mt-7 text-lg font-extrabold">{o.vh.length ? `${c.ui.viewHotels} (${o.vh.length})` : `${c.ui.nearHotels} (${o.nNear})`}</h3>
+              {!o.vh.length && <p className="mb-3 text-sm text-muted">{c.ui.noView}</p>}
+              <div className="flex flex-col gap-3.5">
+                {o.hs.map((h, j) => <HotelCard key={h.id} h={h} l={l} poiId={o.p.id} mode={o.vh.length ? 'view' : 'near'} pos={j + 1} compact />)}
+              </div>
+              <div className="mt-5 flex flex-wrap gap-3">
+                <a href={areaLink(o.p.lat, o.p.lng, track)} target="_blank" rel="sponsored nofollow noopener" className="rounded-full bg-sun px-5 py-3 text-sm font-bold text-white hover:bg-sun-dark">{c.ui.bookNear} {o.p.name[l]} →</a>
+                {viewRoute && <Link href={viewRoute.paths[l]} className="rounded-full border-2 border-sky px-5 py-2.5 text-sm font-bold text-sky hover:bg-sky hover:text-white">{c.ui.allView} {o.p.name[l]}</Link>}
+                {nearRoute && <Link href={nearRoute.paths[l]} className="rounded-full border-2 border-rule px-5 py-2.5 text-sm font-bold hover:border-sky hover:text-sky">{c.ui.allNear} {o.p.name[l]}</Link>}
+              </div>
+            </article>
+          </Wrap>
+        )
+      })}
+      <div className="pb-20" />
     </main>
   )
 }

@@ -3,6 +3,7 @@
 import { ACTIVE, type Locale, type L } from '@/lib/i18n'
 import { CATEGORIES, categoryIndexable, type Category } from '@/lib/categories'
 import { GUIDES, type Guide } from '@/data/guides'
+import { MONUMENT_GUIDES, type MonumentsGuide } from '@/data/monuments'
 import { COUNTRY, CITY, POIS, HOTELS, hotelViewPois, viewIndexable, nearIndexable, type Poi, type Hotel } from '@/lib/data'
 
 const SEG = {
@@ -24,6 +25,7 @@ export type Page =
   | { type: 'category'; cat: Category }
   | { type: 'guides' }
   | { type: 'guide'; guide: Guide }
+  | { type: 'monuments'; guide: MonumentsGuide }
   | { type: 'car' }
 
 export type Route = { key: string; page: Page; paths: Record<Locale, string>; index: boolean }
@@ -54,6 +56,7 @@ export const ROUTES: Route[] = [
   })),
   { key: 'guides', page: { type: 'guides' }, paths: all((l) => p(l, SEG.guides[l])), index: true },
   ...GUIDES.map((g): Route => ({ key: `guide:${g.id}`, page: { type: 'guide', guide: g }, paths: all((l) => p(l, SEG.guides[l], g.slug[l])), index: true })),
+  ...MONUMENT_GUIDES.map((g): Route => ({ key: `guide:${g.id}`, page: { type: 'monuments', guide: g }, paths: all((l) => p(l, SEG.guides[l], g.slug[l])), index: true })),
   { key: 'car', page: { type: 'car' }, paths: all((l) => c(l, SEG.car[l])), index: true },
   ...HOTEL_PAGES.map((h): Route => ({
     key: `hotel:${h.id}`, page: { type: 'hotel', hotel: h }, paths: all((l) => c(l, SEG.hotels[l], h.slug)), index: true,

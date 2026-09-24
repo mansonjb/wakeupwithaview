@@ -47,3 +47,16 @@ room names, ratings, prices) come from `data/raw/` (Booking.com listings collect
 - 16 metro lines / 321 stations, RER A–E: https://en.wikipedia.org/wiki/List_of_Paris_Metro_stations , https://en.wikipedia.org/wiki/R%C3%A9seau_Express_R%C3%A9gional
 - ZFE: Crit'Air 3/4/5 banned weekdays 8am-8pm since 2025: https://www.paris.fr/pages/la-zone-a-faibles-emissions-zfe-pour-lutter-contre-la-pollution-de-l-air-16799
 - Mainline stations destinations: https://www.seat61.com/changing-stations-in-paris.htm , https://blog.lodgis.com/en/paris-train-stations-guide/
+
+## Monuments guide, Paris (checked 2026-09-24)
+Facts per monument, linked on the page to each official site for tickets and opening days.
+- Eiffel Tower (1889, 330 m, tallest until 1930, hourly sparkle): https://www.toureiffel.paris/en
+- Notre-Dame (1163, fire 15/04/2019, reopening 07/12/2024, free entry): https://www.notredamedeparis.fr/en/
+- Sacré-Cœur (1875-1914, consecrated 1919, dome ticket): https://www.sacre-coeur-montmartre.com/english/
+- Arc de Triomphe (1806 order, 1836 inauguration, flame 6.30 pm): https://www.paris-arc-de-triomphe.fr/en
+- Louvre (museum 1793, Pei pyramid 1989, closed Tuesdays): https://www.louvre.fr/en
+- Musée d'Orsay (1900 station, museum 1986, closed Mondays): https://www.musee-orsay.fr/en
+- Invalides (founded 1670, Napoleon's tomb, Army Museum): https://www.musee-armee.fr/en/
+- Panthéon (Soufflot, 1790, Foucault pendulum 1851, colonnade): https://www.paris-pantheon.fr/en
+- Opéra Garnier (1875, Chagall ceiling 1964, day visits): https://www.operadeparis.fr/en/visits/palais-garnier
+Hotel counts and cards: computed from data/normalized/paris.json (view = HIGH/MEDIUM; near = rated, within 1 km).
