@@ -237,7 +237,6 @@ const CITY_CTA = {
   de: { check: 'Preise in Paris prüfen', top: 'Zu den Top 10', bandT: (n: number, t: number) => `Nur ${n} der ${t} geprüften Hotels verkaufen ein Zimmer, das die Aussicht im Namen trägt.`, bandP: 'Solche Zimmer sind in jedem Hotel nur wenige. Vergleiche deine Daten frühzeitig.', bandB: 'Zimmer mit Aussicht vergleichen', area: 'Hotels in diesem Viertel', finalT: 'Bereit, mit Blick auf Paris aufzuwachen?', finalP: 'Live-Preise und Verfügbarkeit unseres Buchungspartners rund um die Sehenswürdigkeiten auf dieser Seite.', finalB: 'Mein Zimmer finden', finalB2: 'Nach Sehenswürdigkeit' },
 }
 const STAT_TONES = ['bg-sky text-white', 'bg-sun text-white', 'bg-ok text-white', 'bg-ink text-white']
-const AREA_TONES = ['border-sky', 'border-sun', 'border-ok', 'border-plum', 'border-star', 'border-ink']
 
 export function CityPage({ l }: { l: Locale }) {
   const k = CITY_CTA[l]
@@ -408,7 +407,7 @@ export function CityPage({ l }: { l: Locale }) {
           {AREAS.filter((a) => areaStats[a.id].n > 0).map((a, i) => {
             const st = areaStats[a.id]
             return (
-              <div key={a.id} className={`flex flex-col rounded-[20px] border-t-[6px] bg-paper p-5 ${AREA_TONES[i % AREA_TONES.length]}`}>
+              <div key={a.id} className="flex flex-col rounded-[20px] bg-paper p-5">
                 <Link href={href(`view:${a.poi}`, l)} className="text-[19px] font-extrabold hover:text-sky">{x.areas[a.id].name}</Link>
                 <div className="mt-1 text-[13px] font-semibold text-ok">{x.areaLine(st.n, st.median)}</div>
                 <p className="mt-2 text-[15px] leading-[1.6] text-muted">{x.areas[a.id].d}</p>
