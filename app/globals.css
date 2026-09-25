@@ -8,6 +8,9 @@
   --color-sun: #e8541a;
   --color-sun-dark: #c9440f;
   --color-peach: #ffb48a;
+  --color-sun-soft: #fff1e8;
+  --color-dusk: #2a1f4d;
+  --color-plum: #6b3fa0;
   --color-dot: #ff8a4c;
   --color-ok: #1fa463;
   --color-ok-soft: #e7f6ee;
@@ -25,7 +28,7 @@
 
 html { -webkit-text-size-adjust: 100%; }
 body { background: var(--color-canvas); color: var(--color-ink); font-family: var(--font-sans); }
-a { color: inherit; text-decoration: none; }
+@layer base { a { color: inherit; text-decoration: none; } }
 .prose-view p { line-height: 1.7; color: var(--color-muted); font-size: 16px; text-wrap: pretty; }
 .prose-view p + p { margin-top: 12px; }
 .balance { text-wrap: balance; }

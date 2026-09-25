@@ -4,7 +4,7 @@ import { ui } from '@/lib/ui'
 import { editorial } from '@/data/editorial'
 import { HOTELS, POIS, CITY, COUNTRY, viewHotels, bestView, shownViews, hotelViewPois, poi, nearHotels, poiDistance, DATA_DATE, type Hotel } from '@/lib/data'
 import { href, route, type Route } from '@/lib/routes'
-import { hotelLink } from '@/lib/site'
+import { hotelLink, areaLink } from '@/lib/site'
 import { abs } from '@/lib/seo'
 import { LANDMARK_PHOTO, CITY_PHOTO, HOME_PHOTO, SOON } from '@/lib/photos'
 import { Breadcrumbs, JsonLd, type Crumb } from '@/components/chrome'
@@ -231,7 +231,17 @@ export function HomePage({ l }: { l: Locale }) {
   )
 }
 
+const CITY_CTA = {
+  en: { check: 'Check prices in Paris', top: 'See the top 10', bandT: (n: number, t: number) => `Only ${n} of the ${t} hotels we checked sell a room named for the view.`, bandP: 'Those rooms are a small share of each hotel. Compare your dates early.', bandB: 'Compare view rooms', area: 'Hotels in this area', finalT: 'Ready to wake up to Paris?', finalP: 'Live prices and availability from our booking partner, around the landmarks on this page.', finalB: 'Find my room', finalB2: 'Browse by landmark' },
+  es: { check: 'Ver precios en París', top: 'Ver el top 10', bandT: (n: number, t: number) => `Solo ${n} de los ${t} hoteles revisados venden una habitación con las vistas en el nombre.`, bandP: 'Son pocas habitaciones en cada hotel. Compara tus fechas con antelación.', bandB: 'Comparar habitaciones con vistas', area: 'Hoteles en esta zona', finalT: '¿Listo para despertar frente a París?', finalP: 'Precios y disponibilidad en directo de nuestro socio de reservas, alrededor de los monumentos de esta página.', finalB: 'Buscar mi habitación', finalB2: 'Ver por monumento' },
+  de: { check: 'Preise in Paris prüfen', top: 'Zu den Top 10', bandT: (n: number, t: number) => `Nur ${n} der ${t} geprüften Hotels verkaufen ein Zimmer, das die Aussicht im Namen trägt.`, bandP: 'Solche Zimmer sind in jedem Hotel nur wenige. Vergleiche deine Daten frühzeitig.', bandB: 'Zimmer mit Aussicht vergleichen', area: 'Hotels in diesem Viertel', finalT: 'Bereit, mit Blick auf Paris aufzuwachen?', finalP: 'Live-Preise und Verfügbarkeit unseres Buchungspartners rund um die Sehenswürdigkeiten auf dieser Seite.', finalB: 'Mein Zimmer finden', finalB2: 'Nach Sehenswürdigkeit' },
+}
+const STAT_TONES = ['bg-sky text-white', 'bg-sun text-white', 'bg-ok text-white', 'bg-ink text-white']
+const AREA_TONES = ['border-sky', 'border-sun', 'border-ok', 'border-plum', 'border-star', 'border-ink']
+
 export function CityPage({ l }: { l: Locale }) {
+  const k = CITY_CTA[l]
+  const cityTrack = (pos: number) => ({ city: 'paris', lang: l, pageType: 'city' as const, position: pos })
   const t = ui(l)
   const x = cityDeep[l]
   const counts = Object.fromEntries(POIS.filter((p) => p.view).map((p) => [p.id, viewHotels(p.id).length]))
@@ -298,6 +308,10 @@ export function CityPage({ l }: { l: Locale }) {
             <h1 className="mt-2 text-[clamp(38px,6vw,72px)] font-extrabold leading-none tracking-[-0.04em]">
               {c.h1.replace(/ (in|en) (Paris|París)$/, '')}<br /><span className="text-peach">{l === 'es' ? 'en París' : 'in Paris'}</span>
             </h1>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <a href={areaLink(CITY.lat, CITY.lng, cityTrack(1))} target="_blank" rel="sponsored nofollow noopener" className="rounded-full bg-sun px-6 py-3 text-[15px] font-bold text-white shadow-lg hover:bg-sun-dark">{k.check} →</a>
+              <a href="#top10" className="rounded-full bg-white/95 px-6 py-3 text-[15px] font-bold text-ink hover:bg-white">{k.top} ↓</a>
+            </div>
           </div>
         </div>
         <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -306,14 +320,15 @@ export function CityPage({ l }: { l: Locale }) {
             [fmtNum(all.length, l), x.stats.withView],
             [fmtNum(all.filter(hi).length, l), x.stats.roomLevel],
             [median ? eur(median, l) : '–', x.stats.median],
-          ].map(([n, s]) => (
-            <div key={s} className="rounded-2xl bg-paper p-4"><div className="text-[26px] font-extrabold tracking-[-0.03em]">{n}</div><div className="text-[13px] text-muted">{s}</div></div>
+          ].map(([n, s], i) => (
+            <div key={s} className={`rounded-2xl p-4 ${STAT_TONES[i]}`}><div className="text-[30px] font-extrabold tracking-[-0.03em]">{n}</div><div className="text-[13px] opacity-85">{s}</div></div>
           ))}
         </div>
         <p className="mt-6 max-w-[820px] text-[17px] leading-[1.65] text-muted">{x.lede}</p>
       </Wrap>
 
       <Wrap className="pt-10">
+        <div id="landmarks" className="scroll-mt-24" />
         <H2 className="mb-5">{t.whatToWakeUp}</H2>
         <div className="grid gap-3.5 [grid-template-columns:repeat(auto-fit,minmax(200px,1fr))]">
           {views.map((p) => <LandmarkTile key={p.id} l={l} id={p.id} />)}
@@ -325,21 +340,34 @@ export function CityPage({ l }: { l: Locale }) {
       </Wrap>
 
       <Wrap className="pt-12">
-        <H2>{x.bestTitle}</H2>
+        <div id="top10" className="scroll-mt-24" />
+        <span className="inline-block rounded-full bg-sun-soft px-3 py-1 text-xs font-extrabold uppercase tracking-[.08em] text-sun-dark">Top 10</span>
+        <H2 className="mt-2">{x.bestTitle}</H2>
         <p className="mb-6 mt-2 max-w-[760px] text-muted">{x.bestLede}</p>
         <div className="grid gap-4">
-          {best.map((h, i) => <HotelCard key={h.id} h={h} l={l} poiId={mainPoi(h)} mode="view" pos={i + 1} compact />)}
+          {best.slice(0, 4).map((h, i) => <HotelCard key={h.id} h={h} l={l} poiId={mainPoi(h)} mode="view" pos={i + 1} compact />)}
+        </div>
+        <div className="my-6 grid items-center gap-5 rounded-[28px] bg-gradient-to-br from-dusk to-plum p-7 text-white sm:p-9 lg:grid-cols-[1fr_auto]">
+          <div>
+            <div className="text-[24px] font-extrabold leading-tight tracking-[-0.03em] sm:text-[28px]">{k.bandT(all.filter(hi).length, HOTELS.length)}</div>
+            <p className="mt-2 text-[15px] text-white/80">{k.bandP}</p>
+          </div>
+          <a href={areaLink(CITY.lat, CITY.lng, cityTrack(2))} target="_blank" rel="sponsored nofollow noopener" className="w-fit rounded-full bg-peach px-6 py-3 font-bold text-dusk hover:bg-white">{k.bandB} →</a>
+        </div>
+        <div className="grid gap-4">
+          {best.slice(4).map((h, i) => <HotelCard key={h.id} h={h} l={l} poiId={mainPoi(h)} mode="view" pos={i + 5} compact />)}
         </div>
       </Wrap>
 
-      <Wrap className="pt-14">
+      <div className="mt-14 bg-sky-soft py-12">
+      <Wrap>
         <H2>{x.picksTitle}</H2>
         <p className="mb-5 mt-2 text-muted">{x.picksLede}</p>
         <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">
           {picks.map(({ cat, h }) => {
             const hp = route(`hotel:${h.id}`)
             return (
-              <div key={cat.id} className="rounded-[20px] bg-paper p-2">
+              <div key={cat.id} className="rounded-[20px] bg-paper p-2 shadow-[0_6px_20px_rgba(26,92,255,.08)] transition-transform hover:-translate-y-1">
                 <Link href={hp ? hp.paths[l] : href(`cat:${cat.id}`, l)} className="block">
                   <div className="relative h-[170px] overflow-hidden rounded-[14px] bg-[#DDE3EE]">
                     {h.image && <img src={h.image} alt={h.name} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />}
@@ -356,71 +384,81 @@ export function CityPage({ l }: { l: Locale }) {
           })}
         </div>
       </Wrap>
+      </div>
 
-
-      <Wrap className="pt-14">
-        <H2 className="mb-5">{x.historyTitle}</H2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {x.history.map((s) => (
-            <div key={s.h} className="rounded-[20px] bg-paper p-5">
-              <h3 className="text-[17px] font-bold">{s.h}</h3>
-              <p className="mt-2 text-[15px] leading-[1.65] text-muted">{s.p}</p>
-            </div>
+      <div className="bg-ink py-14 text-white">
+      <Wrap>
+        <h2 className="balance text-[26px] font-extrabold tracking-[-0.03em] sm:text-[30px]">{x.historyTitle}</h2>
+        <ol className="mt-7 grid gap-6 sm:grid-cols-2">
+          {x.history.map((s, i) => (
+            <li key={s.h} className="border-l-2 border-peach pl-5">
+              <div className="text-[40px] font-extrabold leading-none text-peach/90">{String(i + 1).padStart(2, '0')}</div>
+              <h3 className="mt-2 text-[18px] font-bold">{s.h}</h3>
+              <p className="mt-2 text-[15px] leading-[1.65] text-[#C9CED8]">{s.p}</p>
+            </li>
           ))}
-        </div>
+        </ol>
       </Wrap>
+      </div>
 
       <Wrap className="pt-14">
         <H2>{x.areasTitle}</H2>
         <p className="mb-5 mt-2 max-w-[760px] text-muted">{x.areasLede}</p>
         <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(300px,1fr))]">
-          {AREAS.filter((a) => areaStats[a.id].n > 0).map((a) => {
+          {AREAS.filter((a) => areaStats[a.id].n > 0).map((a, i) => {
             const st = areaStats[a.id]
             return (
-              <Link key={a.id} href={href(`view:${a.poi}`, l)} className="block rounded-[20px] bg-paper p-5 transition-shadow hover:shadow-[0_12px_30px_rgba(20,30,60,.12)]">
-                <div className="text-[17px] font-bold">{x.areas[a.id].name}</div>
+              <div key={a.id} className={`flex flex-col rounded-[20px] border-t-[6px] bg-paper p-5 ${AREA_TONES[i % AREA_TONES.length]}`}>
+                <Link href={href(`view:${a.poi}`, l)} className="text-[19px] font-extrabold hover:text-sky">{x.areas[a.id].name}</Link>
                 <div className="mt-1 text-[13px] font-semibold text-ok">{x.areaLine(st.n, st.median)}</div>
                 <p className="mt-2 text-[15px] leading-[1.6] text-muted">{x.areas[a.id].d}</p>
-              </Link>
+                <a href={areaLink(a.lat, a.lng, { ...cityTrack(10 + i), landmark: a.poi })} target="_blank" rel="sponsored nofollow noopener" className="mt-4 w-fit rounded-full bg-ok px-4 py-2 text-sm font-bold text-white hover:brightness-110">{k.area} →</a>
+              </div>
             )
           })}
         </div>
       </Wrap>
 
-      <Wrap className="pt-14">
+      <div className="mt-14 bg-sun-soft py-12">
+      <Wrap>
         <H2>{x.viewpointsTitle}</H2>
         <p className="mb-5 mt-2 text-muted">{x.viewpointsLede}</p>
         <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
-          {x.viewpoints.map((v) => (
-            <div key={v.name} className="rounded-[18px] bg-paper p-4">
-              <div className="flex items-start justify-between gap-2"><div className="font-bold">{v.name}</div><span className="shrink-0 rounded-full bg-canvas px-2 py-0.5 text-[11px] font-semibold text-muted">{v.tag}</span></div>
+          {x.viewpoints.map((v, i) => (
+            <div key={v.name} className="relative rounded-[18px] bg-paper p-4 pl-14">
+              <span className="absolute left-4 top-4 flex h-7 w-7 items-center justify-center rounded-full bg-sun text-xs font-extrabold text-white">{i + 1}</span>
+              <div className="flex items-start justify-between gap-2"><div className="font-bold">{v.name}</div><span className="shrink-0 rounded-full bg-sun-soft px-2 py-0.5 text-[11px] font-bold text-sun-dark">{v.tag}</span></div>
               <p className="mt-1.5 text-[14px] leading-[1.55] text-muted">{v.d}</p>
             </div>
           ))}
         </div>
       </Wrap>
+      </div>
       <Wrap className="pt-14">
         <H2>{x.transportTitle}</H2>
         <p className="mb-5 mt-2 max-w-[760px] text-muted">{x.transportLede}</p>
         <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">
           {x.transport({ km: fmtDistance(walk, l), min: walkMinutes(walk) }).map((m) => (
             <div key={m.h} className="rounded-[20px] bg-paper p-5">
-              <div className="text-[17px] font-bold"><span className="mr-2">{m.icon}</span>{m.h}</div>
+              <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-soft text-xl">{m.icon}</div>
+              <div className="text-[17px] font-bold">{m.h}</div>
               <p className="mt-2 text-[15px] leading-[1.6] text-muted">{m.p}</p>
             </div>
           ))}
         </div>
-        <Link href={href('car', l)} className="mt-5 inline-block rounded-full bg-sun px-5 py-2.5 font-bold text-white">🚗 {x.carCta} →</Link>
+        <Link href={href('car', l)} className="mt-5 inline-block rounded-full bg-sky px-5 py-2.5 font-bold text-white hover:bg-sky-dark">🚗 {x.carCta} →</Link>
       </Wrap>
-      <Wrap className="pt-10">
-        <H2 className="mb-5">{x.lightTitle}</H2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {x.light.map((s) => (
-            <div key={s.h} className="rounded-[20px] bg-paper p-5">
-              <h3 className="text-[17px] font-bold">{s.h}</h3>
-              <p className="mt-2 text-[15px] leading-[1.65] text-muted">{s.p}</p>
-            </div>
-          ))}
+      <Wrap className="pt-14">
+        <div className="rounded-[28px] bg-gradient-to-br from-sun via-plum to-dusk p-7 text-white sm:p-10">
+          <h2 className="balance text-[26px] font-extrabold tracking-[-0.03em] sm:text-[30px]">🌅 {x.lightTitle}</h2>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            {x.light.map((s) => (
+              <div key={s.h} className="rounded-[20px] bg-white/10 p-5 backdrop-blur-sm">
+                <h3 className="text-[17px] font-bold">{s.h}</h3>
+                <p className="mt-2 text-[15px] leading-[1.65] text-white/85">{s.p}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </Wrap>
 
@@ -433,6 +471,18 @@ export function CityPage({ l }: { l: Locale }) {
         <Chips items={nearPois.map((p) => ({ label: `${t.hotelsNear(bare(p.name[l]))} · ${nearHotels(p.id).length}`, href: route(`near:${p.id}`)!.paths[l] }))} />
       </Wrap>
       <Wrap className="pt-12"><GuideTeaser g={GUIDES[0]} l={l} /></Wrap>
+      <Wrap className="pt-12">
+        <div className="grid items-center gap-5 rounded-[28px] bg-sun p-7 text-white sm:p-10 lg:grid-cols-[1fr_auto]">
+          <div>
+            <div className="text-[28px] font-extrabold leading-tight tracking-[-0.03em] sm:text-[34px]">{k.finalT}</div>
+            <p className="mt-2 text-white/90">{k.finalP}</p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <a href={areaLink(CITY.lat, CITY.lng, cityTrack(3))} target="_blank" rel="sponsored nofollow noopener" className="rounded-full bg-white px-6 py-3 font-bold text-sun-dark hover:bg-ink hover:text-white">{k.finalB} →</a>
+            <a href="#landmarks" className="rounded-full border-2 border-white px-6 py-2.5 font-bold text-white hover:bg-white/15">{k.finalB2}</a>
+          </div>
+        </div>
+      </Wrap>
       <Wrap className="pt-12">
         <H2 className="mb-4">{t.goodToKnow}</H2>
         <Faq items={faq} />
